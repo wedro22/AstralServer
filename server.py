@@ -1,22 +1,17 @@
-from bottle import route, run, request, post, get
-import sqlite3
-
-# Инициализация БД
-def init_db():
-    conn = sqlite3.connect('astral.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS CommandList (
-                id INTEGER PRIMARY KEY,
-                client TEXT,
-                data TEXT,
-                type TEXT   
-                )''') #TEXT NOT NULL если надо
-    conn.commit()
-    c.execute('CREATE INDEX idx_client ON CommandList (client)')
-    conn.commit()
-    conn.close()
+# server.py
+from bottle import route, run, request, post, get, default_app
+from database import init_db, get_all_clients, add_client
+from astral_page import setup_astral_routes
 
 init_db()
+
+@post('/add_client')
+def add_client_route():
+    client_name = request.forms.get('client_name')
+    if client_name:
+        add_client(client_name)
+        return {"status": "success", "client": client_name}
+    return {"status": "error", "message": "No client name provided"}
 
 @route('/')
 def hello():
@@ -26,21 +21,14 @@ def hello():
 def echo():
     return 'You sent: ' + request.body.read().decode('utf-8')
 
-@route('/astral')
-def astral():
-    return
-
 @get('/astral/data')
 def getAstral():
-    #key = request.query.key  # GET-параметр
-    #return storage.get(key)
-    return
+    return "Data not implemented yet"
 
 @post('/astral/data')
 def postAstral():
-    #data = request.json  # JSON-тело
-    #storage[data['key']] = data['value']
-    #return {"status": "OK"}
-    return
+    return {"status": "OK"}
 
+app = default_app()
+setup_astral_routes(app)
 run(host='127.0.0.1', port=8000)
