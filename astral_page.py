@@ -1,11 +1,11 @@
 # astral_page.py
 from bottle import template
-from database import get_all_clients
 
 def setup_astral_routes(app):
     @app.route('/astral')
     def astral_page():
-        clients = get_all_clients()
+        clients = ["client1", "client2", "client3"]  # Заглушка, нужно заменить на вызов функции
+
         return template('''
         <!DOCTYPE html>
         <html>

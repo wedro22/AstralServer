@@ -1,6 +1,6 @@
 # server.py
 from bottle import route, run, request, post, get, default_app
-from database import init_db, get_all_clients, add_client
+from database import init_db, add_client
 from astral_page import setup_astral_routes
 
 init_db()
