@@ -48,6 +48,36 @@ def astral():
     return template('astral')
 
 
+# Удаление клиента
+@route('/astral/<client_name>/action/delete', method=['POST'])
+def delete_client_route(client_name):
+    result = database.delete_client(client_name)
+    if result['status'] == 'success':
+        return redirect("/astral")
+    return template('astral', error=result.get('message'))
+
+# Удаление проекта
+@route('/astral/<client_name>/<project_name>/action/delete', method=['POST'])
+def delete_project_route(client_name, project_name):
+    result = database.delete_project(client_name, project_name)
+    if result['status'] == 'success':
+        return redirect(f"/astral/{client_name}")
+    projects = database.get_client_projects(client_name)
+    return template('client', client_name=client_name,
+                   projects=projects, error=result.get('message'))
+
+# Удаление скрипта
+@route('/astral/<client_name>/<project_name>/<script_name>/action/delete', method=['POST'])
+def delete_script_route(client_name, project_name, script_name):
+    result = database.delete_script(client_name, project_name, script_name)
+    if result['status'] == 'success':
+        return redirect(f"/astral/{client_name}/{project_name}")
+    scripts = database.get_project_scripts(client_name, project_name)
+    return template('project', client_name=client_name,
+                   project_name=project_name, scripts=scripts,
+                   error=result.get('message'))
+
+
 @route('/astral/<client_name>', method=['GET', 'POST'])
 def client_page(client_name):
     if request.method == 'POST':
@@ -159,5 +189,6 @@ def script_raw(client_name, project_name, script_name):
             return "true" if result['status'] == 'success' else ""
 
     return script_data
+
 
 run(host='127.0.0.1', port=8000)

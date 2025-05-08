@@ -9,6 +9,10 @@
         <h1>Скрипт: {{client_name}}/{{project_name}}/{{script_name}}</h1>
         <a href="/astral/{{client_name}}/{{project_name}}">← Назад к скриптам</a>
 
+        <form action="/astral/{{client_name}}/{{project_name}}/{{script_name}}/action/delete" method="post">
+            <button type="submit">Удалить скрипт</button>
+        </form>
+
         % if defined('message') and message:
             <div class="message">{{message}}</div>
         % end

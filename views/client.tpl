@@ -9,6 +9,10 @@
         <h1>Клиент: {{client_name}}</h1>
         <a href="/astral">← Назад к списку клиентов</a>
 
+        <form action="/astral/{{client_name}}/action/delete" method="post">
+            <button type="submit">Удалить клиента</button>
+        </form>
+
         % if defined('error') and error:
             <div class="error">{{error}}</div>
         % end

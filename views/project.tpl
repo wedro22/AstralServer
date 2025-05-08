@@ -9,6 +9,10 @@
         <h1>Проект: {{client_name}}/{{project_name}}</h1>
         <a href="/astral/{{client_name}}">← Назад к проектам</a>
 
+        <form action="/astral/{{client_name}}/{{project_name}}/action/delete" method="post">
+            <button type="submit">Удалить проект</button>
+        </form>
+
         % if defined('error') and error:
             <div class="error">{{error}}</div>
         % end
