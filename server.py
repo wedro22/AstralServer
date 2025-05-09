@@ -184,7 +184,16 @@ def script_raw(client_name, project_name, script_name):
 
     if request.method == 'POST':
         if request.forms:
-            new_data = "".join(f"{k}={v}" for k, v in request.forms.items())
+            #new_data = "".join(f"{k}={request.forms.getunicode(k)}" for k in request.forms.keys())
+            #result = database.save_script_data(client_name, project_name, script_name, new_data)
+            #return "true" if result['status'] == 'success' else ""
+            # Получаем данные как сырые байты и декодируем в UTF-8
+            raw_data = request.body.read()
+            try:
+                new_data = raw_data.decode('utf-8')
+            except UnicodeDecodeError:
+                new_data = raw_data.decode('latin-1')  # fallback на latin-1 если utf-8 не сработает
+
             result = database.save_script_data(client_name, project_name, script_name, new_data)
             return "true" if result['status'] == 'success' else ""
 

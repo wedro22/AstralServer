@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="raw &amp; server lua">
-      <change afterPath="$PROJECT_DIR$/lua/echo_simple.lua" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lua/server.lua" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lua/server2.lua" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lua/server3.lua" beforeDir="false" afterPath="$PROJECT_DIR$/lua/echo_test.lua" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astral.db" beforeDir="false" afterPath="$PROJECT_DIR$/astral.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,12 +24,12 @@
     &quot;assignee&quot;: &quot;wedro22&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/wedro22/AstralServer.git",
-    "accountId": "8ef9aeca-5aa5-4261-88ac-b1976ed39c3b"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/wedro22/AstralServer.git&quot;,
+    &quot;accountId&quot;: &quot;8ef9aeca-5aa5-4261-88ac-b1976ed39c3b&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
