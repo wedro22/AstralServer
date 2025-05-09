@@ -1,5 +1,5 @@
 # server.py
-from bottle import route, run, request, post, get, default_app, static_file, template, redirect, hook
+from bottle import route, run, request, post, static_file, template, redirect, hook
 import database
 
 database.init_db()
@@ -183,19 +183,15 @@ def script_raw(client_name, project_name, script_name):
     script_data = database.get_script_data(client_name, project_name, script_name) or ""
 
     if request.method == 'POST':
-        if request.forms:
-            #new_data = "".join(f"{k}={request.forms.getunicode(k)}" for k in request.forms.keys())
-            #result = database.save_script_data(client_name, project_name, script_name, new_data)
-            #return "true" if result['status'] == 'success' else ""
-            # Получаем данные как сырые байты и декодируем в UTF-8
-            raw_data = request.body.read()
-            try:
-                new_data = raw_data.decode('utf-8')
-            except UnicodeDecodeError:
-                new_data = raw_data.decode('latin-1')  # fallback на latin-1 если utf-8 не сработает
+        # Только raw data (быстро и без лишних проверок)
+        raw_data = request.body.read()
+        try:
+            new_data = raw_data.decode('utf-8')
+        except UnicodeDecodeError:
+            new_data = raw_data.decode('latin-1')
 
-            result = database.save_script_data(client_name, project_name, script_name, new_data)
-            return "true" if result['status'] == 'success' else ""
+        result = database.save_script_data(client_name, project_name, script_name, new_data)
+        return "true" if result['status'] == 'success' else ""
 
     return script_data
 
