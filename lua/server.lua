@@ -3,7 +3,7 @@ local internet = require("internet")
 local URL="https://wedro.share.zrok.io/astral/gt/gt"
 local URLGET="https://wedro.share.zrok.io/astral/gt/gt/get/raw"
 local URLPOST="https://wedro.share.zrok.io/astral/gt/gt/post/raw"
-local handle, reason = internet.request(URL)
+local handle, reason = internet.request(URLGET)
 if not handle then
     print("Ошибка подключения:", reason)
 else
