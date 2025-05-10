@@ -4,20 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="raw_data.decode('utf-8')">
-      <change afterPath="$PROJECT_DIR$/lua/execute_server_var1.1.lua" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/ace/mode-list.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_in_work.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_in_work2.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_in_work3.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_in_work4.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_in_work5.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/script_old.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/AstralServer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AstralServer.iml" afterDir="false" />
+    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="Ace">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astral.db" beforeDir="false" afterPath="$PROJECT_DIR$/astral.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/script.tpl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,7 +131,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746807431588</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Ace">
+      <option name="closed" value="true" />
+      <created>1746847422429</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1746847422429</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -155,6 +152,7 @@
     <MESSAGE value="raw script? delete" />
     <MESSAGE value="raw &amp; server lua" />
     <MESSAGE value="raw_data.decode('utf-8')" />
-    <option name="LAST_COMMIT_MESSAGE" value="raw_data.decode('utf-8')" />
+    <MESSAGE value="Ace" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ace" />
   </component>
 </project>
