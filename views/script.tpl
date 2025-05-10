@@ -3,41 +3,25 @@
 <head>
     <title>{{client_name}}/{{project_name}}/{{script_name}}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/ace/ace.js"></script>
+    <script src="/static/ace/ext-language_tools.js"></script>
     <style>
         .editor-container {
-            position: relative;
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+        .ace-editor {
+            width: 50%;
             height: 500px;
             border: 1px solid #ccc;
         }
-        #ace-editor {
-            width: 100%;
-            height: 100%;
-        }
-        .editor-controls {
-            margin: 10px 0;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        .editor-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
         .language-selector {
-            flex-grow: 1;
+            margin-bottom: 10px;
         }
         select {
             padding: 5px;
-        }
-        .hidden {
-            display: none;
-        }
-        .ace_tooltip {
-            font-family: monospace;
             font-size: 14px;
-            max-width: 500px;
-            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -62,246 +46,169 @@
             <div class="message">{{message}}</div>
         % end
 
-        <form method="POST" class="script-form">
-            <div class="editor-controls">
-                <div class="editor-toggle">
-                    <input type="checkbox" id="editor-toggle" checked>
-                    <label for="editor-toggle">Редактор кода</label>
-                </div>
-                <div class="language-selector">
-                    <select id="language-select">
-                        <!-- Languages will be loaded from mode-list.json -->
-                    </select>
-                </div>
+        <form method="POST" class="script-form" id="scriptForm">
+            <div class="language-selector">
+                <select id="languageSelector"></select>
             </div>
-
             <div class="editor-container">
-                <div id="ace-editor"></div>
-                <textarea name="script_data" id="script-textarea" class="script-editor hidden">{{script_data}}</textarea>
+                <div id="leftEditor" class="ace-editor"></div>
+                <div id="rightEditor" class="ace-editor"></div>
             </div>
-
+            <input type="hidden" name="script_data" id="hiddenScriptData">
             <div class="form-actions">
                 <button type="submit" name="save" class="primary-btn">Сохранить</button>
-                <button type="button" id="reload-btn" class="secondary-btn">Перезагрузить</button>
+                <button type="button" name="reload" class="secondary-btn" id="reloadBtn">Перезагрузить</button>
             </div>
         </form>
     </div>
 
-    <script src="/static/ace/ace.js"></script>
-    <script src="/static/ace/ext-language_tools.js"></script>
     <script>
+        // Глобальные переменные для редакторов
+        let leftEditor, rightEditor;
+
+        // Основная функция инициализации
         document.addEventListener('DOMContentLoaded', function() {
-            // Load saved data from localStorage
-            const savedData = localStorage.getItem('scriptEditorData');
-            const savedLanguage = localStorage.getItem('scriptEditorLanguage');
-            const savedEditorState = localStorage.getItem('scriptEditorEnabled');
+            const pageKey = window.location.pathname;
 
-            // Get elements
-            const editorToggle = document.getElementById('editor-toggle');
-            const textarea = document.getElementById('script-textarea');
-            const languageSelect = document.getElementById('language-select');
-            const reloadBtn = document.getElementById('reload-btn');
+            // Инициализация редакторов
+            leftEditor = ace.edit("leftEditor");
+            rightEditor = ace.edit("rightEditor");
 
-            // Initialize editor state
-            const editorEnabled = savedEditorState !== null ? savedEditorState === 'true' : true;
-            editorToggle.checked = editorEnabled;
+            configureEditors([leftEditor, rightEditor]);
 
-            // Initialize Ace Editor with advanced features
-            const editor = ace.edit("ace-editor");
-            editor.setTheme("ace/theme/chrome");
-            editor.session.setUseWrapMode(true);
-
-            // Configure editor with all requested features
-            editor.setOptions({
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                //  enableInlineAutocompletion: true,
-                enableSnippets: true,
-                showInvisibles: false,
-                showGutter: true,
-                showPrintMargin: true,
-                printMarginColumn: 80,
-                highlightActiveLine: true,
-                highlightSelectedWord: true,
-                readOnly: false,
-                cursorStyle: "ace",
-                mergeUndoDeltas: true,
-                behavioursEnabled: true,
-                wrapBehavioursEnabled: true,
-                autoScrollEditorIntoView: true,
-                fontSize: "12px",
-                fontFamily: "monospace",
-                tooltipFollowsMouse: true,
-                useSvgGutterIcons: true,
-                displayIndentGuides: true,
-                showFoldWidgets: true,
-                showLineNumbers: true,
-                showInvisibles: false,
-                fadeFoldWidgets: false,
-                showFoldWidgets: true
-            });
-
-            // Set up autocompletion
-            ace.require("ace/ext/language_tools");
-            editor.setOptions({
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                enableSnippets: true
-            });
-
-            let lastChangeTime = 0;
-
-            editor.on("change", function(e) {
-                // Оптимизация: пропускаем частые изменения
-                const now = Date.now();
-                if (now - lastChangeTime < 30) return;
-                lastChangeTime = now;
-
-                // Только для вставки текста (не для удаления)
-                if (e.action !== "insert") return;
-
-                const cursor = editor.selection.getCursor();
-                const line = editor.session.getLine(cursor.row);
-                const prefix = line.substring(0, cursor.column);
-
-                // Триггерим автодополнение для переменных и методов
-                if (prefix.match(/[\w$\.]+$/)) {
-                    setTimeout(() => {
-                        // Проверяем, что курсор не переместился
-                        const currentCursor = editor.selection.getCursor();
-                        if (cursor.row === currentCursor.row &&
-                            cursor.column === currentCursor.column) {
-                            editor.execCommand("startAutocomplete");
-                        }
-                    }, 100);    //время через которое автоподсказка inlive
-                }
-            });
-
-            // Set initial mode (language)
-            let initialMode = 'lua';
-            if (savedLanguage) {
-                initialMode = savedLanguage;
-            }
-            editor.session.setMode(`ace/mode/${initialMode}`);
-
-            // Load mode list
+            // Загрузка списка языков и инициализация
             fetch('/static/ace/mode-list.json')
                 .then(response => response.json())
-                .then(modes => {
-                    modes.forEach(mode => {
-                        const option = document.createElement('option');
-                        option.value = mode;
-                        option.textContent = mode;
-                        if (mode === initialMode) {
-                            option.selected = true;
-                        }
-                        languageSelect.appendChild(option);
-                    });
-                });
+                .then(initializeApplication)
+                .catch(error => console.error('Error loading languages:', error));
 
-            // Set initial content
-            if (savedData) {
-                editor.setValue(savedData, -1);
-                textarea.value = savedData;
-            } else {
-                editor.setValue(textarea.value, -1);
-            }
-
-            // Toggle between editor and textarea
-            function toggleEditor() {
-                const isEditorEnabled = editorToggle.checked;
-
-                if (isEditorEnabled) {
-                    // Switch to editor - copy text from textarea
-                    editor.setValue(textarea.value, -1);
-                    document.getElementById('ace-editor').classList.remove('hidden');
-                    textarea.classList.add('hidden');
-                } else {
-                    // Switch to textarea - copy text from editor
-                    textarea.value = editor.getValue();
-                    document.getElementById('ace-editor').classList.add('hidden');
-                    textarea.classList.remove('hidden');
-                }
-
-                localStorage.setItem('scriptEditorEnabled', isEditorEnabled);
-            }
-
-            editorToggle.addEventListener('change', toggleEditor);
-
-            // Initialize visibility
-            toggleEditor();
-
-            // Handle language change
-            languageSelect.addEventListener('change', function() {
-                const mode = this.value;
-                editor.session.setMode(`ace/mode/${mode}`);
-                localStorage.setItem('scriptEditorLanguage', mode);
-
-                // Load snippets for the selected language if available
-                ace.config.loadModule(`ace/snippets/${mode}`, function(m) {
-                    if (m) {
-                        editor.session.setMode(`ace/mode/${mode}`);
-                    }
-                });
-            });
-
-            // Save content on change
-            editor.session.on('change', function() {
-                const content = editor.getValue();
-                localStorage.setItem('scriptEditorData', content);
-                textarea.value = content;
-            });
-
-            textarea.addEventListener('input', function() {
-                const content = this.value;
-                localStorage.setItem('scriptEditorData', content);
-                editor.setValue(content, -1);
-            });
-
-            // Handle reload button
-            reloadBtn.addEventListener('click', function() {
-                fetch(window.location.href)
-                    .then(response => response.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const serverData = doc.querySelector('.script-editor').value;
-
-                        // Update both editor and textarea
-                        editor.setValue(serverData, -1);
-                        textarea.value = serverData;
-
-                        // Save to localStorage
-                        localStorage.setItem('scriptEditorData', serverData);
-                    })
-                    .catch(error => {
-                        console.error('Error reloading data:', error);
-                    });
-            });
-
-            // Handle form submit to ensure latest content is submitted
-            document.querySelector('.script-form').addEventListener('submit', function() {
-                if (editorToggle.checked) {
-                    textarea.value = editor.getValue();
-                }
-            });
-
-            // Add custom keybindings for autocomplete
-            editor.commands.addCommand({
-                name: "triggerAutocomplete",
-                bindKey: {win: "Ctrl-Space", mac: "Command-Space"},
-                exec: function(editor) {
-                    editor.execCommand("startAutocomplete");
-                },
-                readOnly: true
-            });
-
-
-
-            // Configure print margin
-            editor.setShowPrintMargin(true);
-            editor.setPrintMarginColumn(80);
+            // Загрузка актуальных данных с сервера
+            fetchLatestData();
         });
+
+        // Конфигурация редакторов
+        function configureEditors(editors) {
+            editors.forEach(editor => {
+                editor.setTheme("ace/theme/chrome");
+                editor.setShowPrintMargin(false);
+                editor.setOptions({
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true,
+                    enableSnippets: true
+                });
+            });
+        }
+
+        // Инициализация приложения
+        function initializeApplication(languages) {
+            const pageKey = window.location.pathname;
+            const selector = document.getElementById('languageSelector');
+
+            // Заполнение селектора языками
+            languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                selector.appendChild(option);
+            });
+
+            // Загрузка или создание сохраненных данных
+            const savedData = getSavedData(pageKey);
+
+            // Установка языка и содержимого
+            setApplicationState(savedData);
+
+            // Настройка обработчиков событий
+            setupEventHandlers(pageKey, selector);
+        }
+
+        // Получение сохраненных данных
+        function getSavedData(pageKey) {
+            let savedData = localStorage.getItem(pageKey);
+
+            if (!savedData) {
+                savedData = {
+                    language: 'lua',
+                    scriptData: `{{script_data}}`
+                };
+                localStorage.setItem(pageKey, JSON.stringify(savedData));
+            } else {
+                savedData = JSON.parse(savedData);
+            }
+
+            return savedData;
+        }
+
+        // Установка состояния приложения
+        function setApplicationState(savedData) {
+            document.getElementById('languageSelector').value = savedData.language;
+            setEditorLanguage(leftEditor, savedData.language);
+            setEditorLanguage(rightEditor, savedData.language);
+
+            leftEditor.setValue(savedData.scriptData, -1);
+            rightEditor.setValue(`{{script_data}}`, -1);
+        }
+
+        // Установка языка редактора
+        function setEditorLanguage(editor, language) {
+            editor.session.setMode(`ace/mode/${language}`);
+        }
+
+        // Настройка обработчиков событий
+        function setupEventHandlers(pageKey, selector) {
+            // Изменение языка
+            selector.addEventListener('change', function() {
+                const newLanguage = this.value;
+                updateEditorLanguage(newLanguage, pageKey);
+            });
+
+            // Изменение содержимого левого редактора
+            leftEditor.session.on('change', function() {
+                updateLocalStorage(pageKey, leftEditor.getValue());
+            });
+
+            // Кнопка сохранения
+            document.getElementById('scriptForm').addEventListener('submit', function(e) {
+                document.getElementById('hiddenScriptData').value = leftEditor.getValue();
+            });
+
+            // Кнопка перезагрузки
+            document.getElementById('reloadBtn').addEventListener('click', fetchLatestData);
+        }
+
+        // Обновление языка редакторов
+        function updateEditorLanguage(language, pageKey) {
+            setEditorLanguage(leftEditor, language);
+            setEditorLanguage(rightEditor, language);
+
+            // Обновление localStorage
+            const savedData = JSON.parse(localStorage.getItem(pageKey));
+            savedData.language = language;
+            localStorage.setItem(pageKey, JSON.stringify(savedData));
+        }
+
+        // Обновление localStorage
+        function updateLocalStorage(pageKey, data) {
+            const savedData = JSON.parse(localStorage.getItem(pageKey));
+            savedData.scriptData = data;
+            localStorage.setItem(pageKey, JSON.stringify(savedData));
+        }
+
+        // Получение актуальных данных с сервера
+        async function fetchLatestData() {
+            try {
+                const response = await fetch(window.location.pathname + '/updates');
+                const data = await response.text();
+
+                if (data) {
+                    rightEditor.setValue(data, -1);
+                    leftEditor.setValue(data, -1);
+                    updateLocalStorage(window.location.pathname, data);
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+            }
+        }
     </script>
 </body>
 </html>

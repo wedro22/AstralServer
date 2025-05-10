@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="raw_data.decode('utf-8')" />
+    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="raw_data.decode('utf-8')">
+      <change beforePath="$PROJECT_DIR$/.idea/AstralServer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AstralServer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astral.db" beforeDir="false" afterPath="$PROJECT_DIR$/astral.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/script.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/script.tpl" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,12 +27,12 @@
     &quot;assignee&quot;: &quot;wedro22&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/wedro22/AstralServer.git",
-    "accountId": "5292a3b1-24eb-4a1b-8790-07bc8eb0e782"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/wedro22/AstralServer.git&quot;,
+    &quot;accountId&quot;: &quot;5292a3b1-24eb-4a1b-8790-07bc8eb0e782&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -136,7 +143,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746848622286</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Ace">
+      <option name="closed" value="true" />
+      <created>1746848259155</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1746848259155</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="UnknownFeatures">
