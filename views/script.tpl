@@ -6,19 +6,6 @@
     <script src="/static/ace/ace.js"></script>
     <script src="/static/ace/ext-language_tools.js"></script>
     <style>
-        .editor-container {
-            display: flex;
-            width: 100%;
-            gap: 10px;
-        }
-        .ace-editor {
-            width: 50%;
-            height: 500px;
-            border: 1px solid #ccc;
-        }
-        .language-selector {
-            margin-bottom: 10px;
-        }
         select {
             padding: 5px;
             font-size: 14px;
@@ -85,6 +72,7 @@
                     enableSnippets: true
                 });
             });
+            rightEditor.readOnly: true
 
             // Загрузка списка языков
             fetch('/static/ace/mode-list.json')
@@ -128,6 +116,7 @@
                 // Устанавливаем содержимое редакторов
                 leftEditor.setValue(savedData.scriptData, -1);
                 rightEditor.setValue(`{{script_data}}`, -1);
+                leftEditor.focus();
 
                 // Обработчики событий
                 setupEventHandlers();
@@ -165,7 +154,22 @@
 
                 // Кнопка сохранения
                 document.getElementById('scriptForm').addEventListener('submit', function(e) {
-                    document.getElementById('hiddenScriptData').value = leftEditor.getValue();
+                    e.preventDefault(); // Предотвращаем стандартную отправку формы
+
+                    const formData = new FormData();
+                    formData.append('script_data', leftEditor.getValue());
+
+                    fetch(window.location.pathname, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // После успешного сохранения обновляем страницу без сохранения состояния формы
+                            window.location.href = window.location.pathname;
+                        }
+                    })
+                    .catch(error => console.error('Error saving script:', error));
                 });
 
                 // Кнопка перезагрузки
@@ -178,6 +182,7 @@
                     // Устанавливаем содержимое редакторов
                     leftEditor.setValue(document.getElementById('hiddenScriptData').value, -1);
                     rightEditor.setValue(document.getElementById('hiddenScriptData').value, -1);
+                    leftEditor.focus();
                 });
             }
         });
@@ -213,6 +218,7 @@
         }
 
         // Запускаем обновление каждые 5 секунд
+        updateHiddenData();
         updateInterval = setInterval(updateHiddenData, 5000);
 
         // Очистка при закрытии страницы
