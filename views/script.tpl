@@ -45,6 +45,9 @@
             <div class="form-actions">
                 <button type="submit" name="save" class="primary-btn">Сохранить</button>
                 <button type="button" name="reload" class="secondary-btn" id="reloadBtn">Сбросить изменения</button>
+                <div class="progress-container">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
             </div>
         </form>
     </div>
@@ -72,6 +75,9 @@
                     enableSnippets: true
                 });
             });
+            // Делаем правый редактор только для чтения
+            rightEditor.setReadOnly(true);
+            rightEditor.container.classList.add("readonly-editor");
 
             // Загрузка списка языков
             fetch('/static/ace/mode-list.json')
@@ -209,27 +215,51 @@
                 const response = await fetch(window.location.pathname + '/raw');
                 if (!response.ok) {
                     console.error('HTTP error:', response.status, response.statusText);
-                    return null;
+                    return null; // Ошибка HTTP (404, 500 и т. д.)
                 }
-                return await response.text();
+                const data = await response.text(); // Читаем тело ответа ОДИН РАЗ
+                return data === null ? "" : data;   // Если null → "", иначе исходные данные
             } catch (error) {
                 console.error('Fetch failed:', error);
-                return null;
+                return null; // Ошибка сети или другая проблема
             }
         }
 
         // Функция, устанавливающая script_data у hiddenScriptData
         function updateHiddenData() {
+            const progressFill = document.getElementById('progressFill');
+
+            // Сбрасываем и запускаем анимацию
+            progressFill.style.width = '0%';
+            progressFill.classList.remove('error');
+
+            // Плавное заполнение за 4.5 секунд (чтобы завершилось до следующего вызова)
+            let start = Date.now();
+            const animate = () => {
+                let progress = (Date.now() - start) / 4500 * 100;
+                if (progress > 100) progress = 100;
+                progressFill.style.width = progress + '%';
+                if (progress < 100) requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+
+            // Загрузка данных
             fetchScriptData()
                 .then(data => {
-                    if (data !== null) {
-                        document.getElementById('hiddenScriptData').value = data;
-                        if (rightEditor && typeof rightEditor.setValue === 'function') {
-                            rightEditor.setValue(data, -1);
-                        } else {
-                            console.warn('Right editor not initialized');
-                        }
+                    // Если data === null, значит, была ошибка в fetchScriptData()
+                    if (data == null) {
+                        console.error("Данные не получены из-за ошибки сервера");
+                        progressFill.classList.add('error'); // Показываем ошибку
+                        return;
                     }
+
+                    // Если data === "" — это валидный пустой ответ
+                    document.getElementById('hiddenScriptData').value = data;
+                    if (rightEditor) rightEditor.setValue(data);
+                })
+                .catch(error => {
+                    progressFill.classList.add('error');
+                    console.error('Update failed:', error);
                 });
         }
 
