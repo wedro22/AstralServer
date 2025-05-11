@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="script работает 2">
+    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="script работает 3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astral.db" beforeDir="false" afterPath="$PROJECT_DIR$/astral.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/style.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/views/script.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/script.tpl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -165,7 +164,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746971653528</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="script работает 3">
+      <option name="closed" value="true" />
+      <created>1746984906163</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1746984906163</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -191,6 +198,7 @@
     <MESSAGE value="raw_data.decode('utf-8')" />
     <MESSAGE value="script??" />
     <MESSAGE value="script работает 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="script работает 2" />
+    <MESSAGE value="script работает 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="script работает 3" />
   </component>
 </project>

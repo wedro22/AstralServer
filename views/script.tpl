@@ -255,7 +255,12 @@
 
                     // Если data === "" — это валидный пустой ответ
                     document.getElementById('hiddenScriptData').value = data;
-                    if (rightEditor) rightEditor.setValue(data);
+                    if (rightEditor) {
+                        const session = rightEditor.session;
+                        const selection = rightEditor.selection.toJSON(); // Сохраняем текущее выделение
+                        rightEditor.setValue(data, -1);
+                        rightEditor.selection.fromJSON(selection); // Восстанавливаем выделение
+                    }
                 })
                 .catch(error => {
                     progressFill.classList.add('error');
