@@ -72,7 +72,6 @@
                     enableSnippets: true
                 });
             });
-            rightEditor.readOnly: true
 
             // Загрузка списка языков
             fetch('/static/ace/mode-list.json')
@@ -153,11 +152,22 @@
                 });
 
                 // Кнопка сохранения
-                document.getElementById('scriptForm').addEventListener('submit', function(e) {
-                    e.preventDefault(); // Предотвращаем стандартную отправку формы
+                //document.getElementById('scriptForm').addEventListener('submit', function(e) {
+                //   document.getElementById('hiddenScriptData').value = leftEditor.getValue();
+                //});
 
+                // Кнопка сохранения
+                document.getElementById('scriptForm').addEventListener('submit', function(e) {
+                    e.preventDefault(); // Это важно - предотвращаем стандартную отправку формы
+
+                    // Получаем данные из редактора
+                    const scriptData = leftEditor.getValue();
+                    document.getElementById('hiddenScriptData').value = scriptData;
+
+                    // Создаем FormData и добавляем параметр save
                     const formData = new FormData();
-                    formData.append('script_data', leftEditor.getValue());
+                    formData.append('script_data', scriptData);
+                    formData.append('save', 'true'); // Добавляем параметр save
 
                     fetch(window.location.pathname, {
                         method: 'POST',
@@ -165,11 +175,17 @@
                     })
                     .then(response => {
                         if (response.ok) {
-                            // После успешного сохранения обновляем страницу без сохранения состояния формы
-                            window.location.href = window.location.pathname;
+                            // Обновляем правый редактор и показываем сообщение
+                            updateHiddenData();
+                            window.location.reload(); // Перезагружаем страницу для обновления сообщения
+                        } else {
+                            return response.text().then(text => { throw new Error(text) });
                         }
                     })
-                    .catch(error => console.error('Error saving script:', error));
+                    .catch(error => {
+                        console.error('Error saving script:', error);
+                        alert('Ошибка сохранения: ' + error.message);
+                    });
                 });
 
                 // Кнопка перезагрузки
