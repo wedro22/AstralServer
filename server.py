@@ -1,11 +1,6 @@
 # server.py
-from bottle import route, run, request, post, static_file, template, redirect, hook, response
+from bottle import route, run, request, post, static_file, template, redirect, hook
 import database
-
-# Глобальная переменная для хранения последней версии данных
-latest_script_data = ""
-
-database.init_db()
 
 @route('/')
 def hello():
@@ -156,7 +151,7 @@ def script_page(client_name, project_name, script_name):
         if 'save' in request.forms:
             script_data = request.forms.getunicode('script_data', '')
             result = database.save_script_data(client_name, project_name, script_name, script_data)
-            latest_script_data = script_data  # Просто обновляем кеш
+            #latest_script_data = script_data  # Просто обновляем кеш
 
             current_data = database.get_script_data(client_name, project_name, script_name)
             return template('script',
@@ -195,18 +190,11 @@ def script_raw(client_name, project_name, script_name):
             new_data = raw_data.decode('latin-1')
 
         result = database.save_script_data(client_name, project_name, script_name, new_data)
-        latest_script_data = new_data  # Просто обновляем кеш
+        #latest_script_data = new_data  # Просто обновляем кеш
         return "true" if result['status'] == 'success' else ""
 
     return script_data
 
-
-# Endpoint для получения данных
-@route('/astral/<client_name>/<project_name>/<script_name>/updates')
-def get_updates(client_name, project_name, script_name):
-    #response.content_type = 'text/plain'  # Возвращаем сырые текстовые данные
-    return latest_script_data   # or ""  # Возвращаем данные или пустую строку
-
-
+database.init_db()
 #run(host='127.0.0.1', port=8000)
 run(host='0.0.0.0', port=8000)
