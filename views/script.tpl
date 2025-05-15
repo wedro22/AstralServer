@@ -108,7 +108,7 @@
                     // Инициализация по умолчанию
                     savedData = {
                         language: 'lua',
-                        scriptData: `{{script_data}}`
+                        scriptData: `{{!script_data}}`
                     };
                     localStorage.setItem(pageKey, JSON.stringify(savedData));
                 }
@@ -120,7 +120,7 @@
 
                 // Устанавливаем содержимое редакторов
                 leftEditor.setValue(savedData.scriptData, -1);
-                rightEditor.setValue(`{{script_data}}`, -1);
+                rightEditor.setValue(`{{!script_data}}`, -1);
                 leftEditor.focus();
 
                 // Обработчики событий
