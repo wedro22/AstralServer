@@ -89,6 +89,7 @@ def delete_script_route(client_name, project_name, script_name):
 def client_page(client_name):
     if request.method == 'POST':
         project_name = request.forms.getunicode('project_name', '').strip()
+        project_type = request.forms.getunicode('project_type', '').strip() or None
 
         if not project_name:
             projects = database.get_client_projects(client_name)
@@ -97,7 +98,7 @@ def client_page(client_name):
                             projects=projects,
                             error="Имя проекта не может быть пустым")
 
-        result = database.astral_project_creation(client_name, project_name)
+        result = database.astral_project_creation(client_name, project_name, project_type)
 
         if result['status'] == 'success':
             return redirect(f"/astral/{client_name}/{project_name}")

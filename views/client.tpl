@@ -29,7 +29,12 @@
         % if projects:
             <ul class="project-list">
                 % for project in projects:
-                    <li><a href="/astral/{{client_name}}/{{project}}">{{project}}</a></li>
+                    <li>
+                        <a href="/astral/{{client_name}}/{{project['name']}}">{{project['name']}}</a>
+                        % if project['type']:
+                            <span class="project-type">({{project['type']}})</span>
+                        % end
+                    </li>
                 % end
             </ul>
         % else:
@@ -38,8 +43,12 @@
 
         <form method="POST" class="project-form">
             <label for="project_name">Новый проект:</label>
-            <input type="text" id="project_name" name="project_name" required>
-            <button type="submit">Создать</button>
+
+            <div class="fields-container">
+                <input type="text" id="project_name" name="project_name" placeholder="имя проекта" required class="name-field">
+                <input type="text" id="project_type" name="project_type" placeholder="тип" class="type-field">
+                <button type="submit">Создать</button>
+            </div>
         </form>
     </div>
 </body>

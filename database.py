@@ -29,6 +29,7 @@ def init_db():
                 project_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 client_id INTEGER NOT NULL,
                 project_name TEXT NOT NULL,
+                project_type TEXT DEFAULT NULL,
                 FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
                 UNIQUE(client_id, project_name)
             )
@@ -87,7 +88,7 @@ def astral_client_creation(client_name):
             conn.close()
 
 
-def astral_project_creation(client_name, project_name):
+def astral_project_creation(client_name, project_name, project_type):
     """Создает новый проект для клиента"""
     conn = None
     try:
@@ -104,8 +105,8 @@ def astral_project_creation(client_name, project_name):
             return {"status": "error", "message": "Клиент не найден"}
 
         conn.execute(
-            'INSERT INTO projects (client_id, project_name) VALUES (?, ?)',
-            (client['client_id'], project_name)
+            'INSERT INTO projects (client_id, project_name, project_type) VALUES (?, ?, ?)',
+            (client['client_id'], project_name, project_type)
         )
         conn.commit()
         return {"status": "success"}
@@ -129,11 +130,12 @@ def get_client_projects(client_name):
             return []  # вместо None
 
         projects = conn.execute(
-            'SELECT project_name FROM projects WHERE client_id = ?',
+            'SELECT project_name, project_type FROM projects WHERE client_id = ?',
             (client['client_id'],)
         ).fetchall()
 
-        return [p['project_name'] for p in projects] or []  # гарантированно список
+        # Изменено: возвращаем список словарей вместо списка строк
+        return [{'name': p['project_name'], 'type': p['project_type']} for p in projects] or []
     finally:
         conn.close()
 

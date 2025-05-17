@@ -324,3 +324,26 @@ button:hover, .primary-btn:hover {
 }
 
 /* /\ ACE /\ */
+
+/* строка для страницы Проект
+ имя_проекта тип_проекта Создать
+ flex: flex-grow: 0-1, flex-shrink: 0-1, flex-basis: .. или auto
+ */
+.fields-container {
+    display: flex; /* Размещаем элементы в одной строке */
+    width: 100%; /* Контейнер занимает всю доступную ширину */
+    gap: 8px; /* Небольшой отступ между элементами */
+    align-items: center; /* Выравниваем элементы по вертикали */
+}
+
+button[type="submit"] {
+    flex: 0 0 100px;
+}
+
+.type-field {
+    flex: 0 0 150px;
+}
+
+.name-field {
+    flex: 1 0 150px;
+}
