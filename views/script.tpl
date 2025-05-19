@@ -10,6 +10,10 @@
             padding: 5px;
             font-size: 14px;
         }
+        .container {
+            min-width: 900px;
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -72,7 +76,8 @@
                 editor.setOptions({
                     enableBasicAutocompletion: true,
                     enableLiveAutocompletion: true,
-                    enableSnippets: true
+                    enableSnippets: true,
+                    showFoldWidgets: true
                 });
             });
             // Делаем правый редактор только для чтения

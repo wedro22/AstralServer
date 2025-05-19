@@ -163,6 +163,30 @@ def get_project_scripts(client_name, project_name):
         conn.close()
 
 
+def get_project_type(client_name: str, project_name: str) -> str:
+    """Всегда возвращает строку (пустую, если project_type не найден или ошибка)"""
+    conn = get_db()
+    try:
+        project = conn.execute('''
+            SELECT p.project_type 
+            FROM projects p
+            JOIN clients c ON p.client_id = c.client_id
+            WHERE c.client_name = ? AND p.project_name = ?
+        ''', (client_name, project_name)).fetchone()
+
+        return project['project_type'] if project else ""
+
+    except (sqlite3.OperationalError, sqlite3.DatabaseError, TypeError) as e:
+        # Логируем ошибку при необходимости
+        from venv import logger
+        logger.debug(f"Error getting project type: {e}")
+        return ""
+
+    finally:
+        conn.close()
+
+
+
 def astral_script_creation(client_name, project_name, script_name):
     """Создает новый скрипт в проекте"""
     conn = None

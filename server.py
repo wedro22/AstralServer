@@ -145,10 +145,14 @@ def project_page(client_name, project_name):
                             error=result['message'])
 
     scripts = database.get_project_scripts(client_name, project_name)
+    project_type = database.get_project_type(client_name, project_name)
     if scripts is None:
         return "Проект не найден"
 
-    return template('project',
+    if project_type != "Table":
+        project_type = "project"
+
+    return template(project_type,
                     client_name=client_name,
                     project_name=project_name,
                     scripts=scripts,
@@ -161,7 +165,6 @@ def script_page(client_name, project_name, script_name):
         if 'save' in request.forms:
             script_data = request.forms.getunicode('script_data', '')
             result = database.save_script_data(client_name, project_name, script_name, script_data)
-            latest_script_data = script_data  # Просто обновляем кеш
 
             current_data = database.get_script_data(client_name, project_name, script_name)
             return template('script',
@@ -200,7 +203,6 @@ def script_raw(client_name, project_name, script_name):
             new_data = raw_data.decode('latin-1')
 
         result = database.save_script_data(client_name, project_name, script_name, new_data)
-        latest_script_data = new_data  # Просто обновляем кеш
         return "true" if result['status'] == 'success' else ""
 
     return script_data

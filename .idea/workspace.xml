@@ -4,26 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="исправлены кавычки в сырых данных при загрузке страницы с кэшем,&#10;добавлен значок">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_13_36_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_13_36__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_16_41_[Changes]/astral.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_16_41_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_16_41__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_23_01_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2025_23_01__Changes_.xml" beforeDir="false" />
+    <list default="true" id="3386ae90-cea5-4770-b3b4-9cba0b1c67f5" name="Changes" comment="добавлен тип проекта, без спец страницы и редиректа">
+      <change afterPath="$PROJECT_DIR$/views/Table.tpl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astral.db" beforeDir="false" afterPath="$PROJECT_DIR$/astral.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/style.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/views/client.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/client.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script_in_work.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script_in_work2.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script_in_work3.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script_in_work4.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/script_in_work5.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/script.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/views/script.tpl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,25 +43,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.astral_page.executor&quot;: &quot;Run&quot;,
-    &quot;Python.database.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.nicegui_client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.textual_client.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/wedro/PycharmProjects/AstralServer/static&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.astral_page.executor": "Run",
+    "Python.database.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.nicegui_client.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.textual_client.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/wedro/PycharmProjects/AstralServer/views",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\wedro\PycharmProjects\AstralServer\views" />
       <recent name="C:\Users\wedro\PycharmProjects\AstralServer\static" />
       <recent name="C:\Users\user\PycharmProjects\PythonProject\lua" />
     </key>
@@ -205,7 +195,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747339456647</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="добавлен тип проекта, без спец страницы и редиректа">
+      <option name="closed" value="true" />
+      <created>1747508420906</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1747508420906</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -216,7 +214,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -233,6 +243,7 @@
     <MESSAGE value="script работает 2" />
     <MESSAGE value="script работает 3" />
     <MESSAGE value="исправлены кавычки в сырых данных при загрузке страницы с кэшем,&#10;добавлен значок" />
-    <option name="LAST_COMMIT_MESSAGE" value="исправлены кавычки в сырых данных при загрузке страницы с кэшем,&#10;добавлен значок" />
+    <MESSAGE value="добавлен тип проекта, без спец страницы и редиректа" />
+    <option name="LAST_COMMIT_MESSAGE" value="добавлен тип проекта, без спец страницы и редиректа" />
   </component>
 </project>

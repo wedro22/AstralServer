@@ -46,7 +46,10 @@
 
             <div class="fields-container">
                 <input type="text" id="project_name" name="project_name" placeholder="имя проекта" required class="name-field">
-                <input type="text" id="project_type" name="project_type" placeholder="тип" class="type-field">
+                <select id="project_type" name="project_type" class="type-field">
+                    <option value="" selected></option>
+                    <option value="Table">Table</option>
+                </select>
                 <button type="submit">Создать</button>
             </div>
         </form>

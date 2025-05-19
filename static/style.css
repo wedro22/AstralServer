@@ -278,7 +278,7 @@ button:hover, .primary-btn:hover {
     /*font-family: 'Roboto', sans-serif;*/
 }
 
-* Для лучшего отображения увеличенного шрифта */
+/* Для лучшего отображения увеличенного шрифта */
 .ace_gutter {
     font-size: 16px !important;
 }
@@ -342,6 +342,9 @@ button[type="submit"] {
 
 .type-field {
     flex: 0 0 150px;
+    padding: 8px 12px; /* Увеличивает внутренние отступы */
+    height: 38px; /* Фиксированная высота (опционально) */
+    box-sizing: border-box; /* Чтобы padding не влиял на общую высоту */
 }
 
 .name-field {
