@@ -6,13 +6,20 @@
     <script src="/static/ace/ace.js"></script>
     <script src="/static/ace/ext-language_tools.js"></script>
     <style>
+        body {
+            margin: 0;
+            padding: 10px; /* Уменьшаем отступы вокруг всего контента */
+        }
         select {
             padding: 5px;
             font-size: 14px;
         }
         .container {
+            margin: 0;
+            padding: 10px;
             min-width: 900px;
             max-width: 100%;
+            height: 100%;
         }
     </style>
 </head>
