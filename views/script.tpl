@@ -3,8 +3,8 @@
 <head>
     <title>{{client_name}}/{{project_name}}/{{script_name}}</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/ace/ace.js"></script>
-    <script src="/static/ace/ext-language_tools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ext-language_tools.js"></script>
     <style>
         body {
             margin: 0;
@@ -92,7 +92,7 @@
             rightEditor.container.classList.add("readonly-editor");
 
             // Загрузка списка языков
-            fetch('/static/ace/mode-list.json')
+            fetch('/static/lang-list.json')
                 .then(response => response.json())
                 .then(languages => {
                     const selector = document.getElementById('languageSelector');
