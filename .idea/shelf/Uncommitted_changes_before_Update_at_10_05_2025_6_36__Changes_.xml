@@ -1,9 +1,0 @@
-<changelist name="Uncommitted_changes_before_Update_at_10_05_2025_6_36_[Changes]" date="1746848192074" recycled="false" toDelete="true">
-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_2025_6_36_[Changes]/shelved.patch" />
-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 10.05.2025 6:36 [Changes]" />
-  <binary>
-    <option name="BEFORE_PATH" value="astral.db" />
-    <option name="AFTER_PATH" value="astral.db" />
-    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_2025_6_36_[Changes]/astral.db" />
-  </binary>
-</changelist>
