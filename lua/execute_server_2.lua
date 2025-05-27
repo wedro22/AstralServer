@@ -4,8 +4,8 @@ local computer = require("computer")
 
 -- Конфигурация
 local CONFIG = {
-    GET_URL = "https://wedro.share.zrok.io/astral/gt/gt/get/raw",
-    POST_URL = "https://wedro.share.zrok.io/astral/gt/gt/post/raw",
+    GET_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/get/raw",
+    POST_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/get/raw",
     POLL_INTERVAL = 5, -- секунд
     MAX_OUTPUT_LENGTH = 1024 * 1024 -- максимальная длина вывода (1MB)
 }
