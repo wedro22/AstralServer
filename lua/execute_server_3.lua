@@ -1,6 +1,6 @@
 local internet = require("internet")
 local os = require("os")
-local executor = require("executor")
+local executor = require("executor2")
 local computer = require("computer")
 
 -- Конфигурация
@@ -46,8 +46,8 @@ while true do
     local code = safeHttpRequest(CONFIG.GET_URL)
     if code and code ~= "" then
         print("Executing code...")
-        local result = executor.safeExecute(code)
-        safeHttpRequest(CONFIG.POST_URL, result)
+        local p,r,e = executor.safeExecute(code)
+        safeHttpRequest(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e)
         print("Execution completed, result sent")
     else
         print("No code received or empty response")
