@@ -1,5 +1,6 @@
 local internet = require("internet")
 local os = require("os")
+local computer = require("computer")
 
 -- Конфигурация
 local CONFIG = {
@@ -66,6 +67,10 @@ local function safeExecute(code)
     return table.concat(output, "\n")
 end
 
+local function checkMemory()
+    return tostring(math.floor(computer.freeMemory() / computer.totalMemory() * 100)) .. "%"
+end
+
 -- Основной цикл сервера
 while true do
     local time = os.date("%H:%M:%S")
@@ -76,11 +81,12 @@ while true do
     if code and code ~= "" then
         print("Executing code...")
         local result = safeExecute(code)
-        safeHttpRequest(CONFIG.POST_URL, result)
+        safeHttpRequest(CONFIG.POST_URL, result, "\n memory: ", checkMemory())
         print("Execution completed, result sent")
     else
         print("No code received or empty response")
     end
+        print("Memory: " .. checkMemory())
 
     os.sleep(CONFIG.POLL_INTERVAL)
 end
