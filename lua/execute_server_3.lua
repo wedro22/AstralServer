@@ -1,6 +1,6 @@
 local internet = require("internet")
 local os = require("os")
-local executor = require("executor2")
+local executor = require("executor3") --не тестил, сейчас работает 2
 local computer = require("computer")
 
 -- Конфигурация
