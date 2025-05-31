@@ -5,30 +5,6 @@ local computer = require("computer")
 
 local longPoll = {}
 
---- Читает все данные из ответа
--- @local
--- @param handle userdata Объект соединения
--- @return string|nil Данные
--- @return string|nil Ошибка
-local function readAllData(handle)
-    if not handle then
-        return nil, "invalid handle"
-    end
-
-    local data = ""
-    local ok, chunk = pcall(handle.read)
-    while ok and chunk do
-        data = data .. chunk
-        ok, chunk = pcall(handle.read)
-    end
-
-    if not ok then
-        return nil, "read error: " .. tostring(chunk)
-    end
-
-    return data
-end
-
 --- Выполняет Long Poll запрос с таймаутом и обработкой ошибок
 -- @param url string URL для запроса
 -- @param[opt] data string|table Тело запроса (nil для GET/HEAD)
