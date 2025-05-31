@@ -55,6 +55,7 @@ function longPoll.request(url, data, headers, method, timeout)
     -- Соединение прошло успешно
     timeout = timeout or 60
     local deadline = computer.uptime() + timeout
+    local data = ""
 
     -- Ожидание соединения с таймаутом
     while computer.uptime() < deadline do
@@ -74,20 +75,23 @@ function longPoll.request(url, data, headers, method, timeout)
         end
 
         -- Чтение данных
-        local data, err = readAllData(handle)
-        if err then
-            pcall(handle.close)
-            return false, err, headers
+        local ok, chunk = pcall(handle.read)
+        while ok and chunk do
+            data = data .. chunk
+            ok, chunk = pcall(handle.read)
         end
 
-        handle:close()
+        if not ok then
+            pcall(handle.close)
+            return false, "read error, chunk:\n" .. tostring(chunk), headers
+        end
+
+        pcall(handle.close)
 
         -- Проверка кода статуса
         if code >= 200 and code < 300 then
-            pcall(handle.close)
             return true, data, headers
         else
-            pcall(handle.close)
             return false, string.format("%d %s", code, status), headers
         end
 
