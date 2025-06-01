@@ -9,7 +9,7 @@ local longPoll = {}
 -- @param[opt] data string|table Тело запроса (nil для GET/HEAD)
 -- @param[opt] headers table Дополнительные HTTP-заголовки
 -- @param[optchain="GET"] method string HTTP-метод
--- @param[opt=60] timeout number Таймаут в секундах
+-- @param[opt=30] timeout number Таймаут в секундах
 -- @return text|nil result текст результата запроса страницы
 -- @return table|nil headers таблица хэдеров результата запроса страницы
 -- @return text|nil err текст ошибки или nil при безошибочном выполнении
@@ -18,7 +18,7 @@ function longPoll.request(url, data, headers, method, timeout)
     if type(url) ~= "string" or url == "" then
         return nil, nil, "URL is incorrect"
     end
-    timeout = timeout or 60     -- 60 сек
+    timeout = timeout or 30     -- 30 сек
     local free_memory_size = 8 * 1024    -- 8 KB памяти не трогаем
     local read_data=""
     local deadline = computer.uptime() + timeout
