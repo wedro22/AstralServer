@@ -53,19 +53,42 @@ function longPoll.request(url, data, headers, method, timeout)
         end
     end
     if not headers then
+        if err ~= "" then err = err .. "\n" end
         err = err .. "Error: handler is not defined. code, status: ".. code .. " " .. status
     end
 
-    -- Чтение данных (упрощённое?)
+    --[[ Чтение данных (упрощённое?)
     computer.pullSignal(0.1) -- Не блокировать надолго
     for chunk in handle do
         --проверка памяти
         if computer.freeMemory() < free_memory_size then
+            if err ~= "" then err = err .. "\n" end
             err = err .. "Error: low memory: " .. tostring(computer.freeMemory()//1024) .. " KB)"
             break
         end
         read_data = read_data .. chunk
+    end]]
+
+    local ok, chunk, e
+    while computer.uptime() < deadline do
+        computer.pullSignal(0.1) -- Не блокировать надолго
+        ok, chunk, reason = pcall(handle.read)
+        --if not ok then
+        if chunk then
+            read_data = read_data .. chunk
+        elseif reason ~= "timeout" then
+            if err ~= "" then err = err .. "\n" end
+            err = err .. "Error: Server disconnected connection or error: " .. reason
+            break -- Сервер закрыл соединение или ошибка
+        end
     end
+
+    --проверка таймаута
+    if computer.uptime() >= deadline then
+        if err ~= "" then err = err .. "\n" end
+        err = err .. "Error: timeout"
+    end
+
 
     -- Преобразование пустой строки ошибок в nil для вывода
     if err == "" then
