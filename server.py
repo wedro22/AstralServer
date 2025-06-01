@@ -1,12 +1,15 @@
 # server.py
+import os
 from bottle import route, request, post, static_file, template, redirect, hook, response
 import database
+
+project_root = os.path.dirname(os.path.abspath(__file__))
 
 @route('/favicon.ico')
 def serve_favicon():
     try:
         response.content_type = 'image/x-icon'
-        return static_file('favicon.ico', root='.')
+        return serve_static('favicon.ico')
     except:
         # Если файл не найден, возвращаем пустой ответ
         response.status = 204
@@ -14,7 +17,7 @@ def serve_favicon():
 
 @route('/static/<filename:path>')   # Статические файлы (CSS, JS) style.css
 def serve_static(filename):
-    return static_file(filename, root='./static')
+    return static_file(filename, root=project_root+'/static')
 
 @route('/')
 def hello():
