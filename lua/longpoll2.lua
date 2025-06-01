@@ -39,7 +39,7 @@ function longPoll.request(url, data, headers, method, timeout)
     -- Попытка соединения провалилась
     if not handle then
         pcall(handle.close, handle)
-        return nil, nil, "Error: request failed. handle: " .. tostring(handle)
+        return nil, nil, "Error: request failed, handle: " .. tostring(handle)
     end
     -- Соединение прошло успешно
 
@@ -54,20 +54,20 @@ function longPoll.request(url, data, headers, method, timeout)
     end
     if not headers then
         if err ~= "" then err = err .. "\n" end
-        err = err .. "Error: handler is not defined. code, status: ".. code .. " " .. status
+        err = err .. "Error: handler is not defined, code, status: ".. code .. " " .. status
     end
 
-    --[[ Чтение данных (упрощённое?)
-    computer.pullSignal(0.1) -- Не блокировать надолго
-    for chunk in handle do
+    -- Чтение данных (упрощённое?)
+    --computer.pullSignal(0.1) -- Не блокировать надолго
+    --for chunk in handle do
         --проверка памяти
-        if computer.freeMemory() < free_memory_size then
-            if err ~= "" then err = err .. "\n" end
-            err = err .. "Error: low memory: " .. tostring(computer.freeMemory()//1024) .. " KB)"
-            break
-        end
-        read_data = read_data .. chunk
-    end]]
+    --    if computer.freeMemory() < free_memory_size then
+    --        if err ~= "" then err = err .. "\n" end
+    --        err = err .. "Error: low memory: " .. tostring(computer.freeMemory()//1024) .. " KB)"
+    --        break
+    --    end
+    --    read_data = read_data .. chunk
+    --end
 
     local ok, chunk, e
     while computer.uptime() < deadline do
@@ -76,10 +76,12 @@ function longPoll.request(url, data, headers, method, timeout)
         --if not ok then
         if chunk then
             read_data = read_data .. chunk
-        elseif reason ~= "timeout" then
+        elseif reason then --and reason ~= "timeout"
             if err ~= "" then err = err .. "\n" end
-            err = err .. "Error: Server disconnected connection or error: " .. reason
+            err = err .. "Error: Server disconnected connection or error, reason: " .. tostring(reason)
             break -- Сервер закрыл соединение или ошибка
+        elseif not chunk and ok then
+            break   --ok
         end
     end
 
