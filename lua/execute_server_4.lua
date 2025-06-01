@@ -26,7 +26,7 @@ while true do
     if not err then
         print("Executing code...")
         local p,r,e = executor.safeExecute(result)
-        safeHttpRequest(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e)
+        longPoll.request(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e)
         print("Execution completed, result sent")
     else
         print(err)
