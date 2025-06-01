@@ -53,8 +53,8 @@ function longPoll.request(url, data, headers, method, timeout)
         end
     end
     if not headers then
-        if err ~= "" then err = err .. "\n" end
-        err = err .. "Error: handler is not defined, code, status: ".. code .. " " .. status
+        --if err ~= "" then err = err .. "\n" end
+        --err = err .. "Error: headers is not defined, code, status: ".. tostring(code) .. " " .. tostring(status)
     end
 
     -- Чтение данных (упрощённое?)
