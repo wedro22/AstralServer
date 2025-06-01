@@ -4,35 +4,6 @@ local internet = require("internet")
 local computer = require("computer")
 
 local longPoll = {}
-
-    local function safe_handle_reader(handle)
-        chunk_size = 16 * 1024    -- 16 KB на чанк
-        local data = ""
-
-        while true do
-            local ok, chunk = pcall(handle.read, chunk_size)
-
-            -- Проверка на ошибку чтения
-            if not ok then
-                return false, data, "Error reading: " .. tostring(chunk)
-            end
-
-            -- Проверка на конец файла
-            if not chunk or #chunk == 0 then
-                break
-            end
-
-            -- Проверка на превышение памяти
-            if computer.freeMemory() < chunk_size then
-                return false, data, "Error: low memory: " .. computer.freeMemory()//1024 .. " KB)"
-            end
-
-            data = data .. chunk
-        end
-
-        return true, data, ""
-    end
-
 --- Выполняет Long Poll запрос с таймаутом и обработкой ошибок
 -- @param url string URL для запроса
 -- @param[opt] data string|table Тело запроса (nil для GET/HEAD)
@@ -48,6 +19,8 @@ function longPoll.request(url, data, headers, method, timeout)
         return nil, nil, "URL is incorrect"
     end
     timeout = timeout or 60     -- 60 сек
+    local free_memory_size = 8 * 1024    -- 8 KB памяти не трогаем
+    local read_data=""
     local deadline = computer.uptime() + timeout
     local code, status, headers
     local handle
@@ -65,7 +38,7 @@ function longPoll.request(url, data, headers, method, timeout)
     end
     -- Попытка соединения провалилась
     if not handle then
-        pcall(handle.close)
+        pcall(handle.close, handle)
         return nil, nil, "Error: request failed. handle: " .. tostring(handle)
     end
     -- Соединение прошло успешно
@@ -83,21 +56,24 @@ function longPoll.request(url, data, headers, method, timeout)
         err = err .. "Error: handler is not defined. code, status: ".. code .. " " .. status
     end
 
-    -- Чтение данных
+    -- Чтение данных (упрощённое?)
     computer.pullSignal(0.1) -- Не блокировать надолго
-    local ok, read_data, e = safe_handle_reader(handle)
-    if not ok then
-        if err ~= "" then
-            err = err .. "\n"
+    for chunk in handle do
+        --проверка памяти
+        if computer.freeMemory() < free_memory_size then
+            err = err .. "Error: low memory: " .. tostring(computer.freeMemory()//1024) .. " KB)"
+            break
         end
-        err = err .. e
+        read_data = read_data .. chunk
     end
+
+    -- Преобразование пустой строки ошибок в nil для вывода
     if err == "" then
         err = nil
     end
 
     --окончание программы
-    pcall(handle.close)
+    pcall(handle.close, handle)
     return read_data, headers, err
 end
 
