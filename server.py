@@ -2,19 +2,19 @@
 from bottle import route, request, post, static_file, template, redirect, hook, response
 import database
 
-@route('/static/<filename:path>')   # Статические файлы (CSS, JS) style.css
-def serve_static(filename):
-    return static_file(filename, root='./static')
-
 @route('/favicon.ico')
 def serve_favicon():
     try:
         response.content_type = 'image/x-icon'
-        return serve_static('favicon.ico')
+        return static_file('favicon.ico', root='.')
     except:
         # Если файл не найден, возвращаем пустой ответ
         response.status = 204
         return ''
+
+@route('/static/<filename:path>')   # Статические файлы (CSS, JS) style.css
+def serve_static(filename):
+    return static_file(filename, root='./static')
 
 @route('/')
 def hello():
