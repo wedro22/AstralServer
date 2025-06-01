@@ -5,78 +5,100 @@ local computer = require("computer")
 
 local longPoll = {}
 
+    local function safe_handle_reader(handle)
+        chunk_size = 16 * 1024    -- 16 KB на чанк
+        local data = ""
+
+        while true do
+            local ok, chunk = pcall(handle.read, chunk_size)
+
+            -- Проверка на ошибку чтения
+            if not ok then
+                return false, data, "Error reading: " .. tostring(chunk)
+            end
+
+            -- Проверка на конец файла
+            if not chunk or #chunk == 0 then
+                break
+            end
+
+            -- Проверка на превышение памяти
+            if computer.freeMemory() < chunk_size then
+                return false, data, "Error: low memory: " .. computer.freeMemory()//1024 .. " KB)"
+            end
+
+            data = data .. chunk
+        end
+
+        return true, data, ""
+    end
+
 --- Выполняет Long Poll запрос с таймаутом и обработкой ошибок
 -- @param url string URL для запроса
 -- @param[opt] data string|table Тело запроса (nil для GET/HEAD)
 -- @param[opt] headers table Дополнительные HTTP-заголовки
 -- @param[optchain="GET"] method string HTTP-метод
 -- @param[opt=60] timeout number Таймаут в секундах
--- @return boolean ok Успешность операции
--- @return text result текст ответа или текст ошибки
--- @return table|nil headers Заголовки ответа
+-- @return text|nil result текст результата запроса страницы
+-- @return table|nil headers таблица хэдеров результата запроса страницы
+-- @return text|nil err текст ошибки или nil при безошибочном выполнении
 function longPoll.request(url, data, headers, method, timeout)
     -- Проверка обязательных параметров
     if type(url) ~= "string" or url == "" then
-        return false, "invalid URL", nil
+        return nil, nil, "URL is incorrect"
     end
-
-    -- Безопасное создание соединения
-    local ok, handle = pcall(function()
-        return internet.request(url, data, headers, method)
-    end)
-    if not ok or not handle then
-        return false, "request failed, handle:\n" .. tostring(handle), nil
-    end
-
-    -- Соединение прошло успешно
-    timeout = timeout or 60
+    timeout = timeout or 60     -- 60 сек
     local deadline = computer.uptime() + timeout
-    local data = ""
+    local code, status, headers
+    local handle
+    local err = ""
 
-    -- Ожидание соединения с таймаутом
+    -- Попытка получения соединения и хандлера
     while computer.uptime() < deadline do
-        --[[Получение метаданных
-            Если соединение ещё не установлено, вернёт nil.
-            Если возникла ошибка, вернёт nil и сообщение об ошибке. Например, nil, "connection lost".
-            В противном случае возвращает 3 значения:
-                Код ответа (например, 200).
-                Статус (например, "OK").
-                Таблицу с хедерами, которые отправил сервер. Выглядит примерно так:
-                {["Content-Type"] = {"application/json", n = 1}, ["X-My-Header"] = {"value 1", "value 2", n = 2}}.
-        --]]
-        local ok, code, status, headers = pcall(handle.response)
-        if not headers then
-            pcall(handle:close())
-            return false, "handle response metadata error, status:\n" .. tostring(status), nil
+        _, handle = pcall(function()
+            return internet.request(url, data, headers, method)
+        end)
+        if handle then
+            break
         end
-
-        -- Чтение данных
-        local ok, chunk = pcall(handle.read)
-        while ok and chunk do
-            data = data .. chunk
-            ok, chunk = pcall(handle.read)
-        end
-
-        if not ok then
-            pcall(handle.close)
-            return false, "read error, chunk:\n" .. tostring(chunk), headers
-        end
-
-        pcall(handle.close)
-
-        -- Проверка кода статуса
-        if code >= 200 and code < 300 then
-            return true, data, headers
-        else
-            return false, string.format("%d %s", code, status), headers
-        end
-
         computer.pullSignal(0.1) -- Не блокировать надолго
     end
+    -- Попытка соединения провалилась
+    if not handle then
+        pcall(handle.close)
+        return nil, nil, "Error: request failed. handle: " .. tostring(handle)
+    end
+    -- Соединение прошло успешно
 
-    -- Таймаут
+    -- Работа с хандлером: Попытка получения хэдеров
+    while computer.uptime() < deadline do
+        computer.pullSignal(0.1) -- Не блокировать надолго
+        --https://computercraft.ru/blogs/entry/667-kak-vsyo-taki-ispolzovat-internet-platu/
+        _, code, status, headers = pcall(handle.response)
+        if headers then
+            break
+        end
+    end
+    if not headers then
+        err = err .. "Error: handler is not defined. code, status: ".. code .. " " .. status
+    end
+
+    -- Чтение данных
+    computer.pullSignal(0.1) -- Не блокировать надолго
+    local ok, read_data, e = safe_handle_reader(handle)
+    if not ok then
+        if err ~= "" then
+            err = err .. "\n"
+        end
+        err = err .. e
+    end
+    if err == "" then
+        err = nil
+    end
+
+    --окончание программы
     pcall(handle.close)
-    return false, "timeout after " .. timeout .. " seconds", nil
+    return read_data, headers, err
 end
 
 return longPoll
