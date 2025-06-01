@@ -12,7 +12,7 @@ REPO_URL="https://github.com/wedro22/AstralServer"
 # Временная директория для загрузки
 TEMP_DIR="/tmp/AstralServer_temp"
 # Целевая директория на сервере
-TARGET_DIR="/home"  # ЗАМЕНИТЕ НА АКТУАЛЬНЫЙ ПУТЬ!
+TARGET_DIR="/home/wedro22"  # ЗАМЕНИТЕ НА АКТУАЛЬНЫЙ ПУТЬ!
 
 # Проверяем, существует ли временная директория, и очищаем её
 if [ -d "$TEMP_DIR" ]; then
