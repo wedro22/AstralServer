@@ -1,6 +1,6 @@
 local internet = require("internet")
 local os = require("os")
-local executor = require("executor4") --не тестил, сейчас работает 2
+local executor = require("executor4")
 local computer = require("computer")
 local longPoll = require("longpoll2")
 
@@ -8,8 +8,7 @@ local longPoll = require("longpoll2")
 local CONFIG = {
     GET_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/get/raw",
     POST_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/post/raw",
-    GET_URL2 = "https://relay.tunnelhead.dev/t/demo/poll",
-    POLL_INTERVAL = 0.2, -- секунд
+    POLL_INTERVAL = 0.05, -- тик
 }
 
 local function checkMemory()
@@ -26,10 +25,12 @@ while true do
     if not err then
         print("Executing code...")
         local p,r,e = executor.safeExecute(result)
-        local h = ""
-        for i,v in pairs(headers) do
-        for ii,vv in pairs(v) do
-            h=h..tostring(i).." "..tostring(ii).." "..tostring(vv).."\n"
+        if headers then
+            local h = ""
+            for i,v in pairs(headers) do
+            for ii,vv in pairs(v) do
+                h=h..tostring(i).." "..tostring(ii).." "..tostring(vv).."\n"
+            end
         end
     end
         longPoll.request(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e.."\n[H] Headers:\n"..h)

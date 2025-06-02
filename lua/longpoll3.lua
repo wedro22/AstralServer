@@ -43,31 +43,45 @@ function longPoll.request(url, data, headers, method, timeout)
     end
     -- Соединение прошло успешно
 
-    -- Работа с хандлером: Попытка получения хэдеров
-    while computer.uptime() < deadline do
-        computer.pullSignal(0.1) -- Не блокировать надолго
-        --https://computercraft.ru/blogs/entry/667-kak-vsyo-taki-ispolzovat-internet-platu/
-        _, code, status, headers = pcall(handle.response)
-        if headers then
-            break
-        end
-    end
 
-    -- Работа с хандлером: Попытка получения данных
-    local ok, chunk, reason
-    while computer.uptime() < deadline do
-        computer.pullSignal(0.1) -- Не блокировать надолго
-        ok, chunk, reason = pcall(handle.read)
-        --if not ok then
-        if chunk then
-            read_data = read_data .. chunk
-        elseif reason then --and reason ~= "timeout"
-            if err ~= "" then err = err .. "\n" end
-            err = err .. "Error: Server disconnected connection or error, reason: " .. tostring(reason)
-            break -- Сервер закрыл соединение или ошибка
-        elseif not chunk and ok then
-            break   --ok
+    -- Работа с хандлером
+    -- Корутина для получения заголовков
+    local coHeaders = coroutine.create(function()
+        while computer.uptime() < deadline do
+            computer.pullSignal(0.1)
+            --https://computercraft.ru/blogs/entry/667-kak-vsyo-taki-ispolzovat-internet-platu/
+            local ok, c, s, h = pcall(handle.response)
+            if ok and headers then
+                code, status, headers = c, s, h
+                break
+            end
         end
+    end)
+    -- Корутина для чтения данных
+    local coData = coroutine.create(function()
+        while computer.uptime() < deadline do
+            computer.pullSignal(0.1)
+            local ok, chunk, reason = pcall(handle.read)
+            if chunk then
+                read_data = read_data .. chunk
+            elseif reason then --and reason ~= "timeout"
+                if err ~= "" then err = err .. "\n" end
+                err = err .. "Error: Server disconnected connection or error, reason: " .. tostring(reason)
+                break -- Сервер закрыл соединение или ошибка
+            elseif not chunk and ok then
+                break  -- Успешное завершение
+            end
+        end
+    end)
+
+    -- Запускаем обе корутины
+    coroutine.resume(coHeaders)
+    coroutine.resume(coData)
+
+    -- Ждём, пока обе корутины завершатся или истечёт таймаут
+    while (coroutine.status(coHeaders) ~= "dead" or coroutine.status(coData) ~= "dead")
+          and computer.uptime() < deadline do
+        computer.pullSignal(0.1)
     end
 
     --проверка таймаута
