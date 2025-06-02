@@ -2,7 +2,7 @@ local internet = require("internet")
 local os = require("os")
 local executor = require("executor4")
 local computer = require("computer")
-local longPoll = require("longpoll2")
+local longPoll = require("longpoll3")
 
 -- Конфигурация
 local CONFIG = {
@@ -22,23 +22,29 @@ while true do
 
     -- Получаем код для выполнения
     local result, headers, err = longPoll.request(CONFIG.GET_URL)
-    if not err then
+    local h = ""
+    local p,r,e
+    if err then
+        print(err)
+    end
+    if result then
         print("Executing code...")
-        local p,r,e = executor.safeExecute(result)
+        p,r,e = executor.safeExecute(result)
         if headers then
-            local h = ""
             for i,v in pairs(headers) do
-            for ii,vv in pairs(v) do
-                h=h..tostring(i).." "..tostring(ii).." "..tostring(vv).."\n"
+                for ii,vv in pairs(v) do
+                    h=h..tostring(i).." "..tostring(ii).." "..tostring(vv).."\n"
+                end
             end
         end
     end
-        longPoll.request(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e.."\n[H] Headers:\n"..h)
-        print("Execution completed, result sent")
+    result, headers, err = longPoll.request(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e.."\n[H] Headers:\n"..h)
+    if not err then
+        print("Result sent")
     else
-        print(err)
+        print("Result sent, err: ".. err)
     end
-        print("Memory: " .. checkMemory())
 
+    print("Memory: " .. checkMemory())
     os.sleep(CONFIG.POLL_INTERVAL)
 end

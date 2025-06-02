@@ -48,19 +48,18 @@ function longPoll.request(url, data, headers, method, timeout)
     -- Корутина для получения заголовков
     local coHeaders = coroutine.create(function()
         while computer.uptime() < deadline do
-            computer.pullSignal(0.1)
             --https://computercraft.ru/blogs/entry/667-kak-vsyo-taki-ispolzovat-internet-platu/
             local ok, c, s, h = pcall(handle.response)
-            if ok and headers then
+            if h then
                 code, status, headers = c, s, h
                 break
             end
+            coroutine.yield()  -- Отдаём управление
         end
     end)
     -- Корутина для чтения данных
     local coData = coroutine.create(function()
         while computer.uptime() < deadline do
-            computer.pullSignal(0.1)
             local ok, chunk, reason = pcall(handle.read)
             if chunk then
                 read_data = read_data .. chunk
@@ -72,6 +71,7 @@ function longPoll.request(url, data, headers, method, timeout)
                 break  -- Успешное завершение
             end
         end
+        coroutine.yield()  -- Отдаём управление
     end)
 
     -- Запускаем обе корутины
@@ -80,9 +80,17 @@ function longPoll.request(url, data, headers, method, timeout)
 
     -- Ждём, пока обе корутины завершатся или истечёт таймаут
     while (coroutine.status(coHeaders) ~= "dead" or coroutine.status(coData) ~= "dead")
-          and computer.uptime() < deadline do
-        computer.pullSignal(0.1)
+      and computer.uptime() < deadline do
+    -- Возобновляем обе корутины на каждой итерации
+    if coroutine.status(coHeaders) == "suspended" then
+        coroutine.resume(coHeaders)
     end
+    if coroutine.status(coData) == "suspended" then
+        coroutine.resume(coData)
+    end
+
+    computer.pullSignal(0.1)
+end
 
     --проверка таймаута
     if computer.uptime() >= deadline then
