@@ -74,6 +74,7 @@ function longPoll.request(url, data, headers, method, timeout)
         coroutine.yield()  -- Отдаём управление
     end)
 
+    computer.pullSignal(0.1)-- Время для инициализации хандлера
     -- Запускаем обе корутины
     coroutine.resume(coHeaders)
     coroutine.resume(coData)
