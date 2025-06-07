@@ -4,11 +4,12 @@ local executor = require("Astral/executor4")
 local computer = require("computer")
 local longPoll = require("Astral/longpoll3")
 
+local args = {...}
 -- Конфигурация
 local CONFIG = {
-    GET_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/get/raw",
-    POST_URL = "https://wedro22.pythonanywhere.com/astral/gt/gt/post/raw",
-    POLL_INTERVAL = 0.05, -- тик
+    GET_URL = args[1],
+    POST_URL = args[2],
+    PASSWORD = args[3],
 }
 
 local function checkMemory()
@@ -22,11 +23,11 @@ while true do
 
     -- Получаем код для выполнения
     local result, headers, err = longPoll.request(CONFIG.GET_URL)
-    local h = ""
-    local p,r,e
     if err then
         print(err)
     end
+    local h = ""
+    local p,r,e
     if result then
         print("Executing code...")
         p,r,e = executor.safeExecute(result)
@@ -39,12 +40,6 @@ while true do
         end
     end
     result, headers, err = longPoll.request(CONFIG.POST_URL, "[P] Prints:\n"..p.."\n[R] Returns:\n"..r.."\n[E] Errors:\n"..e.."\n[H] Headers:\n"..h)
-    if not err then
-        print("Result sent")
-    else
-        print("Result sent, err: ".. err)
-    end
 
     print("Memory: " .. checkMemory())
-    os.sleep(CONFIG.POLL_INTERVAL)
 end
