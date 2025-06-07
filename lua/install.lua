@@ -5,6 +5,7 @@ local component = require("component")
 local internet = require("internet")
 local fs = require("filesystem")
 local computer = require("computer")
+local shell = require("shell")
 
 -- Базовый URL репозитория
 local repoUrl = "https://raw.githubusercontent.com/wedro22/AstralServer/master/lua/"
@@ -40,13 +41,16 @@ local function install()
 
   -- Разбираем список файлов
   local fileList = {}
-  for line in releaseContent:gmatch("[^\r\n]+") do
-    table.insert(fileList, line:gsub("%s+", "")) -- Удаляем пробелы и переносы
+  for line in releaseContent:gmatch("([^\r\n]+)") do
+    local cleanedLine = line:gsub("%s+", ""):gsub("^%W+", ""):gsub("%W+$", "")
+    if #cleanedLine > 0 and not cleanedLine:match("^%-%-") then -- Игнорируем пустые строки и комментарии
+      table.insert(fileList, cleanedLine)
+    end
   end
 
   -- Создаем/очищаем папку astral
   printProgress("Перезапись директории...")
-  local astralPath = fs.concat(fs.getWorkingDirectory(), "astral")
+  local astralPath = fs.concat(shell.getWorkingDirectory(), "astral")
 
   if fs.exists(astralPath) then
     fs.remove(astralPath)
