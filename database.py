@@ -2,7 +2,7 @@
 import sqlite3
 from pathlib import Path
 from sqlite3 import Error
-DB_NAME=Path(__file__).parent / 'astral.db'
+DB_NAME=Path(__file__).parent.parent / 'astral.db'
 
 def init_db():
     connection = None
