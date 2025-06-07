@@ -1,8 +1,8 @@
 local internet = require("internet")
 local os = require("os")
-local executor = require("executor4")
+local executor = require("Astral/executor4")
 local computer = require("computer")
-local longPoll = require("longpoll3")
+local longPoll = require("Astral/longpoll3")
 
 -- Конфигурация
 local CONFIG = {
