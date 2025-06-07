@@ -6,6 +6,7 @@ local internet = require("internet")
 local fs = require("filesystem")
 local computer = require("computer")
 local shell = require("shell")
+local event = require("event")
 
 -- Директория установки файлов
 local astralPath = fs.concat(shell.getWorkingDirectory(), "Astral")
@@ -184,16 +185,19 @@ local function run()
     print("resultUrl = "..tostring(settings.resultUrl))
 
     -- Формируем команду для нового процесса
-    local cmd = string.format("lua %s %s %s %s",
+    local cmd = string.format(
+        'sleep 0.2 && lua "%s" "%s" "%s" "%s"',
         fs.concat(astralPath, executeFile),
-        string.format("%q", settings.codeUrl or ""),
-        string.format("%q", settings.resultUrl or ""),
-        string.format("%q", settings.password or "")
+        settings.codeUrl or "",
+        settings.resultUrl or "",
+        settings.password or ""
     )
 
-    -- Полностью завершаем текущий скрипт и запускаем новый
-    print("Запуск нового процесса: "..cmd)
-    os.execute(cmd)  -- Полная замена процесса
+    -- Запускаем через shell в фоне
+    os.execute(cmd .. " &")
+
+    -- Немедленный выход
+    error("PROCESS_CHANGE", 0)
 end
 
 -- Обработка аргументов командной строки
