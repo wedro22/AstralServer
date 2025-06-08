@@ -35,17 +35,22 @@ def init_db():
             )
             ''')
 
-        # Таблица scripts (скрипты)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS scripts (
                 script_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 project_id INTEGER NOT NULL,
+                client_id INTEGER NOT NULL,
                 script_name TEXT NOT NULL,
                 script_data TEXT NOT NULL DEFAULT '',
+                script_result TEXT NOT NULL DEFAULT '',
+                draw_x INTEGER DEFAULT NULL,
+                draw_y INTEGER DEFAULT NULL,
+                draw_style TEXT DEFAULT NULL,
                 FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE,
+                FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
                 UNIQUE(project_id, script_name)
             )
-            ''')
+        ''')
 
         print("БД подключено")
         connection.commit()
@@ -251,6 +256,48 @@ def save_script_data(client_name, project_name, script_name, script_data):
                 WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
             )
         ''', (script_data, client_name, project_name, script_name))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        if conn:
+            conn.close()
+
+
+def get_script_result(client_name, project_name, script_name):
+    """Получает данные результата скрипта"""
+    conn = get_db()
+    try:
+        script = conn.execute('''
+            SELECT s.script_result 
+            FROM scripts s
+            JOIN projects p ON s.project_id = p.project_id
+            JOIN clients c ON p.client_id = c.client_id
+            WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
+        ''', (client_name, project_name, script_name)).fetchone()
+
+        return script['script_result'] if script else None
+    finally:
+        conn.close()
+
+
+def save_script_result(client_name, project_name, script_name, script_result):
+    """Сохраняет данные результата скрипта"""
+    conn = None
+    try:
+        conn = get_db()
+        conn.execute('''
+            UPDATE scripts
+            SET script_result = ?
+            WHERE script_id IN (
+                SELECT s.script_id
+                FROM scripts s
+                JOIN projects p ON s.project_id = p.project_id
+                JOIN clients c ON p.client_id = c.client_id
+                WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
+            )
+        ''', (script_result, client_name, project_name, script_name))
         conn.commit()
         return {"status": "success"}
     except Exception as e:
