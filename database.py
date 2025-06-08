@@ -33,11 +33,12 @@ class Script(db.Entity):
     name = orm.Required(str)
     data = orm.Optional(str, default='')
     result = orm.Optional(str, default='')
-    script_type = orm.Optional(str, nullable=True)
+    type = orm.Optional(str, nullable=True)
     draw_x = orm.Optional(int, nullable=True)
     draw_y = orm.Optional(int, nullable=True)
     draw_style = orm.Optional(str, nullable=True)
-    data_read = orm.Optional(datetime, nullable=True)
+    last_reading = orm.Optional(datetime, nullable=True)
+    next_scripts = orm.Optional(str, default='')
 
     orm.composite_key(project, name)
 
@@ -126,102 +127,212 @@ def get_project_type(client_name: str, project_name: str) -> str:
 
 
 @db_session
-def astral_script_creation(client_name: str, project_name: str, script_name: str):
-    """Создает новый скрипт в проекте"""
+def astral_script_creation(
+        client_name: str,
+        project_name: str,
+        script_name: str,
+        **kwargs
+) -> dict:
+    """
+    Создает новый скрипт в существующем проекте.
+
+    Обязательные параметры:
+    - client_name: имя существующего клиента
+    - project_name: имя существующего проекта
+    - script_name: имя создаваемого скрипта
+
+    Опциональные параметры (kwargs):
+    - data: содержимое скрипта
+    - result: результат выполнения
+    - type: тип скрипта
+    - draw_x: координата X для отображения
+    - draw_y: координата Y для отображения
+    - draw_style: стиль отображения
+    - last_reading: дата последнего чтения
+    - next_scripts: список следующих скриптов
+
+    Возвращает словарь с ключами:
+    - status: "success" или "error"
+    - message: дополнительное сообщение (при ошибке)
+    """
     try:
+        # Проверяем существование клиента
         client = Client.get(name=client_name)
         if not client:
-            return {"status": "error", "message": "Клиент не найден"}
+            return {
+                "status": "error",
+                "message": f"Клиент '{client_name}' не найден"
+            }
 
+        # Проверяем существование проекта у этого клиента
         project = Project.get(client=client, name=project_name)
         if not project:
-            return {"status": "error", "message": "Проект не найден"}
+            return {
+                "status": "error",
+                "message": f"Проект '{project_name}' не найден у клиента '{client_name}'"
+            }
 
-        Script.get(project=project, name=script_name) or Script(
+        # Проверяем, не существует ли уже скрипт с таким именем
+        existing_script = Script.get(project=project, name=script_name)
+        if existing_script:
+            return {
+                "status": "error",
+                "message": f"Скрипт '{script_name}' уже существует в проекте"
+            }
+
+        # Создаем новый скрипт с переданными параметрами
+        script = Script(
             project=project,
             client=client,
-            name=script_name
+            name=script_name,
+            **{k: v for k, v in kwargs.items() if hasattr(Script, k)}
         )
+
         orm.commit()
-        return {"status": "success"}
+
+        return {
+            "status": "success",
+            "message": "Скрипт успешно создан",
+        }
+
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error",
+            "message": f"Ошибка при создании скрипта: {str(e)}"
+        }
 
 
 @db_session
-def get_script_data(client_name: str, project_name: str, script_name: str):
-    """Получает данные скрипта"""
-    client = Client.get(name=client_name)
-    if not client:
-        return None
+def astral_script_update(
+        client_name: str,
+        project_name: str,
+        script_name: str,
+        **kwargs
+) -> dict:
+    """
+    Обновляет свойства существующего скрипта.
 
-    project = Project.get(client=client, name=project_name)
-    if not project:
-        return None
+    Обязательные параметры:
+    - client_name: имя клиента
+    - project_name: имя проекта
+    - script_name: имя скрипта
 
-    script = Script.get(project=project, name=script_name)
-    return script.data if script else None
+    Опциональные параметры (kwargs):
+    - Любые свойства класса Script для обновления:
+      data, result, type, draw_x, draw_y, draw_style,
+      last_reading, next_scripts и другие
 
-
-@db_session
-def save_script_data(client_name: str, project_name: str, script_name: str, script_data: str):
-    """Сохраняет данные скрипта"""
+    Возвращает словарь с ключами:
+    - status: "success" или "error"
+    - message: дополнительное сообщение
+    """
     try:
+        # Проверяем существование клиента
         client = Client.get(name=client_name)
         if not client:
-            return {"status": "error", "message": "Клиент не найден"}
+            return {
+                "status": "error",
+                "message": f"Клиент '{client_name}' не найден"
+            }
+
+        # Проверяем существование проекта
+        project = Project.get(client=client, name=project_name)
+        if not project:
+            return {
+                "status": "error",
+                "message": f"Проект '{project_name}' не найден у клиента '{client_name}'"
+            }
+
+        # Находим скрипт
+        script = Script.get(project=project, name=script_name)
+        if not script:
+            return {
+                "status": "error",
+                "message": f"Скрипт '{script_name}' не найден в проекте"
+            }
+
+        # Фильтруем kwargs, оставляя только допустимые атрибуты
+        valid_attrs = {k: v for k, v in kwargs.items() if hasattr(Script, k)}
+
+        if not valid_attrs:
+            return {
+                "status": "error",
+                "message": "Не указано ни одного допустимого поля для обновления"
+            }
+
+        # Обновляем поля
+        updated_fields = []
+        for attr, value in valid_attrs.items():
+            setattr(script, attr, value)
+            updated_fields.append(attr)
+
+        orm.commit()
+
+        return {
+            "status": "success",
+            "message": "Свойства скрипта успешно обновлены",
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Ошибка при обновлении скрипта: {str(e)}"
+        }
+
+
+@db_session
+def get_script_properties(
+        client_name: str,
+        project_name: str,
+        script_name: str
+) -> dict:
+    """
+    Получает свойства скрипта и возвращает их в одном словаре.
+
+    Возвращает словарь с ключами:
+    - status: "success" или "error"
+    - message: информационное сообщение
+    - Все остальные поля скрипта (id, name, data, type и т.д.)
+    """
+    result = {"status": "error", "message": "Неизвестная ошибка"}
+
+    try:
+        # Проверяем цепочку клиент -> проект -> скрипт
+        client = Client.get(name=client_name)
+        if not client:
+            result["message"] = "Клиент не найден"
+            return result
 
         project = Project.get(client=client, name=project_name)
         if not project:
-            return {"status": "error", "message": "Проект не найден"}
+            result["message"] = "Проект не найден"
+            return result
 
         script = Script.get(project=project, name=script_name)
         if not script:
-            return {"status": "error", "message": "Скрипт не найден"}
+            result["message"] = "Скрипт не найден"
+            return result
 
-        script.data = script_data
-        orm.commit()
-        return {"status": "success"}
+        # Получаем все атрибуты скрипта, исключая служебные
+        script_attrs = [attr for attr in dir(script.__class__)
+                        if not attr.startswith('_') and not callable(getattr(script.__class__, attr))]
+
+        # Добавляем поля скрипта в результат
+        for attr in script_attrs:
+            value = getattr(script, attr)
+            if attr == 'last_reading' and value:
+                value = value.isoformat()
+            result[attr] = value
+
+        result.update({
+            "status": "success",
+            "message": "Данные скрипта успешно получены"
+        })
+
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        result["message"] = f"Ошибка при получении скрипта: {str(e)}"
 
-
-@db_session
-def get_script_result(client_name: str, project_name: str, script_name: str):
-    """Получает данные результата скрипта"""
-    client = Client.get(name=client_name)
-    if not client:
-        return None
-
-    project = Project.get(client=client, name=project_name)
-    if not project:
-        return None
-
-    script = Script.get(project=project, name=script_name)
-    return script.result if script else None
-
-
-@db_session
-def save_script_result(client_name: str, project_name: str, script_name: str, script_result: str):
-    """Сохраняет данные результата скрипта"""
-    try:
-        client = Client.get(name=client_name)
-        if not client:
-            return {"status": "error", "message": "Клиент не найден"}
-
-        project = Project.get(client=client, name=project_name)
-        if not project:
-            return {"status": "error", "message": "Проект не найден"}
-
-        script = Script.get(project=project, name=script_name)
-        if not script:
-            return {"status": "error", "message": "Скрипт не найден"}
-
-        script.result = script_result
-        orm.commit()
-        return {"status": "success"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    return result
 
 
 @db_session

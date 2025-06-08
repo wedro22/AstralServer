@@ -167,9 +167,9 @@ def script_page(client_name, project_name, script_name):
     if request.method == 'POST':
         if 'save' in request.forms:
             script_data = request.forms.getunicode('script_data', '')
-            result = database.save_script_data(client_name, project_name, script_name, script_data)
+            result = database.astral_script_update(client_name, project_name, script_name, data=script_data)
 
-            current_data = database.get_script_data(client_name, project_name, script_name)
+            current_data = database.get_script_properties(client_name, project_name, script_name)["data"]
             return template('script',
                             client_name=client_name,
                             project_name=project_name,
@@ -180,7 +180,7 @@ def script_page(client_name, project_name, script_name):
             # Перезагрузка страницы
             pass
 
-    script_data = database.get_script_data(client_name, project_name, script_name)
+    script_data = database.get_script_properties(client_name, project_name, script_name)["data"]
     if script_data is None:
         return "Скрипт не найден"
 
@@ -195,7 +195,7 @@ def script_page(client_name, project_name, script_name):
 # Raw доступ к скрипту
 @route('/astral/<client_name>/<project_name>/<script_name>/raw', method=['GET', 'POST'])
 def script_raw(client_name, project_name, script_name):
-    script_data = database.get_script_data(client_name, project_name, script_name) or ""
+    script_data = database.get_script_properties(client_name, project_name, script_name)["data"] or ""
 
     if request.method == 'POST':
         # Только raw data (быстро и без лишних проверок)
@@ -205,7 +205,7 @@ def script_raw(client_name, project_name, script_name):
         except UnicodeDecodeError:
             new_data = raw_data.decode('latin-1')
 
-        result = database.save_script_data(client_name, project_name, script_name, new_data)
+        result = database.astral_script_update(client_name, project_name, script_name, data=new_data)
         return "true" if result['status'] == 'success' else ""
 
     return script_data
