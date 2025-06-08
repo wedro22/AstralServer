@@ -1,416 +1,287 @@
 # database.py
-import sqlite3
 from pathlib import Path
-from sqlite3 import Error
-DB_NAME=Path(__file__).parent.parent / 'astral.db'
+from datetime import datetime
+from pony import orm #from pony.orm import *
+from pony.orm import db_session
+
+DB_NAME = Path(__file__).parent.parent / 'astral.db'
+
+db = orm.Database()
+
+
+class Client(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    name = orm.Required(str, unique=True)
+    projects = orm.Set('Project', reverse='client')
+    scripts = orm.Set('Script', reverse='client')  # Добавляем обратную ссылку
+
+
+class Project(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    client = orm.Required(Client, reverse='projects')
+    name = orm.Required(str)
+    type = orm.Optional(str, nullable=True)
+    scripts = orm.Set('Script', reverse='project')  # Уже есть
+
+    orm.composite_key(client, name)
+
+
+class Script(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    project = orm.Required(Project, reverse='scripts')
+    client = orm.Required(Client, reverse='scripts')  # Добавляем обратную ссылку
+    name = orm.Required(str)
+    data = orm.Optional(str, default='')
+    result = orm.Optional(str, default='')
+    script_type = orm.Optional(str, nullable=True)
+    draw_x = orm.Optional(int, nullable=True)
+    draw_y = orm.Optional(int, nullable=True)
+    draw_style = orm.Optional(str, nullable=True)
+    data_read = orm.Optional(datetime, nullable=True)
+
+    orm.composite_key(project, name)
+
 
 def init_db():
-    connection = None
     try:
-        # Добавляем параметр detect_types для корректной работы с Unicode
-        connection = sqlite3.connect(DB_NAME, detect_types=sqlite3.PARSE_DECLTYPES)
-        connection.execute("PRAGMA encoding = 'UTF-8'")  # Явно указываем кодировку
-        cursor = connection.cursor()
-
-        # Включаем поддержку внешних ключей
-        cursor.execute("PRAGMA foreign_keys = ON")
-
-        # Таблица clients (клиенты)
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS clients (
-                client_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_name TEXT UNIQUE NOT NULL
-            )
-            ''')
-
-        # Таблица projects (проекты)
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS projects (
-                project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_id INTEGER NOT NULL,
-                project_name TEXT NOT NULL,
-                project_type TEXT DEFAULT NULL,
-                FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
-                UNIQUE(client_id, project_name)
-            )
-            ''')
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS scripts (
-                script_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id INTEGER NOT NULL,
-                client_id INTEGER NOT NULL,
-                script_name TEXT NOT NULL,
-                script_data TEXT NOT NULL DEFAULT '',
-                script_result TEXT NOT NULL DEFAULT '',
-                draw_x INTEGER DEFAULT NULL,
-                draw_y INTEGER DEFAULT NULL,
-                draw_style TEXT DEFAULT NULL,
-                FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE,
-                FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
-                UNIQUE(project_id, script_name)
-            )
-        ''')
-
+        # Подключаемся к базе данных
+        db.bind(provider='sqlite', filename=str(DB_NAME), create_db=True)
+        # Генерируем маппинг сущностей
+        db.generate_mapping(create_tables=True)
         print("БД подключено")
-        connection.commit()
-
-    except Error as e:
-
+    except Exception as e:
         print(f"Ошибка при подключении БД: {e}")
 
-    finally:
 
-        if connection:
-            connection.close()
-
-
-def get_db():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def astral_client_creation(client_name):
+@db_session
+def astral_client_creation(client_name: str):
     """Обрабатывает создание/проверку клиента"""
-    conn = None
     try:
-        # Проверяем, что client_name - это строка в Unicode
-        if not isinstance(client_name, str):
-            client_name = str(client_name, 'utf-8')  # Конвертируем из bytes если нужно
-
-        conn = get_db()
         # Пытаемся добавить клиента (если уже есть - игнорируем)
-        conn.execute('INSERT OR IGNORE INTO clients (client_name) VALUES (?)', (client_name,))
-        conn.commit()
+        Client.get(name=client_name) or Client(name=client_name)
+        orm.commit()
         return {"status": "success", "client": client_name}
-    except sqlite3.IntegrityError as e:
-        return {"status": "error", "message": str(e)}
     except Exception as e:
-        return {"status": "error", "message": f"Database error: {str(e)}"}
-    finally:
-        if conn:
-            conn.close()
+        return {"status": "error", "message": str(e)}
 
 
-def astral_project_creation(client_name, project_name, project_type):
+@db_session
+def astral_project_creation(client_name: str, project_name: str, project_type: str = None):
     """Создает новый проект для клиента"""
-    conn = None
     try:
-        if not isinstance(project_name, str):
-            project_name = str(project_name, 'utf-8')
-
-        conn = get_db()
-        client = conn.execute(
-            'SELECT client_id FROM clients WHERE client_name = ?',
-            (client_name,)
-        ).fetchone()
-
+        client = Client.get(name=client_name)
         if not client:
             return {"status": "error", "message": "Клиент не найден"}
 
-        conn.execute(
-            'INSERT INTO projects (client_id, project_name, project_type) VALUES (?, ?, ?)',
-            (client['client_id'], project_name, project_type)
+        Project.get(client=client, name=project_name) or Project(
+            client=client,
+            name=project_name,
+            type=project_type
         )
-        conn.commit()
+        orm.commit()
         return {"status": "success"}
-    except sqlite3.IntegrityError as e:
+    except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
 
 
-def get_client_projects(client_name):
+@db_session
+def get_client_projects(client_name: str):
     """Всегда возвращает список, даже пустой"""
-    conn = get_db()
-    try:
-        client = conn.execute(
-            'SELECT client_id FROM clients WHERE client_name = ?',
-            (client_name,)
-        ).fetchone()
+    client = Client.get(name=client_name)
+    if not client:
+        return []
 
-        if not client:
-            return []  # вместо None
+    projects = orm.select(p for p in Project if p.client == client)[:]
+    return [{'name': p.name, 'type': p.type} for p in projects]
 
-        projects = conn.execute(
-            'SELECT project_name, project_type FROM projects WHERE client_id = ?',
-            (client['client_id'],)
-        ).fetchall()
 
-        # Изменено: возвращаем список словарей вместо списка строк
-        return [{'name': p['project_name'], 'type': p['project_type']} for p in projects] or []
-    finally:
-        conn.close()
-
-def get_project_scripts(client_name, project_name):
+@db_session
+def get_project_scripts(client_name: str, project_name: str):
     """Всегда возвращает список, даже пустой"""
-    conn = get_db()
-    try:
-        project = conn.execute('''
-            SELECT p.project_id 
-            FROM projects p
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ?
-        ''', (client_name, project_name)).fetchone()
+    client = Client.get(name=client_name)
+    if not client:
+        return []
 
-        if not project:
-            return []  # вместо None
+    project = Project.get(client=client, name=project_name)
+    if not project:
+        return []
 
-        scripts = conn.execute(
-            'SELECT script_name FROM scripts WHERE project_id = ?',
-            (project['project_id'],)
-        ).fetchall()
-
-        return [s['script_name'] for s in scripts] or []  # гарантированно список
-    finally:
-        conn.close()
+    scripts = orm.select(s for s in Script if s.project == project)[:]
+    return [s.name for s in scripts]
 
 
+@db_session
 def get_project_type(client_name: str, project_name: str) -> str:
     """Всегда возвращает строку (пустую, если project_type не найден или ошибка)"""
-    conn = get_db()
     try:
-        project = conn.execute('''
-            SELECT p.project_type 
-            FROM projects p
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ?
-        ''', (client_name, project_name)).fetchone()
+        client = Client.get(name=client_name)
+        if not client:
+            return ""
 
-        return project['project_type'] if project else ""
-
-    except (sqlite3.OperationalError, sqlite3.DatabaseError, TypeError) as e:
-        # Логируем ошибку при необходимости
-        from venv import logger
-        logger.debug(f"Error getting project type: {e}")
+        project = Project.get(client=client, name=project_name)
+        return project.type if project else ""
+    except Exception as e:
+        print(f"Error getting project type: {e}")
         return ""
 
-    finally:
-        conn.close()
 
-
-
-def astral_script_creation(client_name, project_name, script_name):
+@db_session
+def astral_script_creation(client_name: str, project_name: str, script_name: str):
     """Создает новый скрипт в проекте"""
-    conn = None
     try:
-        if not isinstance(script_name, str):
-            script_name = str(script_name, 'utf-8')
+        client = Client.get(name=client_name)
+        if not client:
+            return {"status": "error", "message": "Клиент не найден"}
 
-        conn = get_db()
-        project = conn.execute('''
-            SELECT p.project_id 
-            FROM projects p
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ?
-        ''', (client_name, project_name)).fetchone()
-
+        project = Project.get(client=client, name=project_name)
         if not project:
             return {"status": "error", "message": "Проект не найден"}
 
-        conn.execute(
-            'INSERT INTO scripts (project_id, script_name) VALUES (?, ?)',
-            (project['project_id'], script_name)
+        Script.get(project=project, name=script_name) or Script(
+            project=project,
+            client=client,
+            name=script_name
         )
-        conn.commit()
+        orm.commit()
         return {"status": "success"}
-    except sqlite3.IntegrityError as e:
+    except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
 
 
-def get_script_data(client_name, project_name, script_name):
+@db_session
+def get_script_data(client_name: str, project_name: str, script_name: str):
     """Получает данные скрипта"""
-    conn = get_db()
-    try:
-        script = conn.execute('''
-            SELECT s.script_data 
-            FROM scripts s
-            JOIN projects p ON s.project_id = p.project_id
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
-        ''', (client_name, project_name, script_name)).fetchone()
+    client = Client.get(name=client_name)
+    if not client:
+        return None
 
-        return script['script_data'] if script else None
-    finally:
-        conn.close()
+    project = Project.get(client=client, name=project_name)
+    if not project:
+        return None
+
+    script = Script.get(project=project, name=script_name)
+    return script.data if script else None
 
 
-def save_script_data(client_name, project_name, script_name, script_data):
+@db_session
+def save_script_data(client_name: str, project_name: str, script_name: str, script_data: str):
     """Сохраняет данные скрипта"""
-    conn = None
     try:
-        conn = get_db()
-        conn.execute('''
-            UPDATE scripts
-            SET script_data = ?
-            WHERE script_id IN (
-                SELECT s.script_id
-                FROM scripts s
-                JOIN projects p ON s.project_id = p.project_id
-                JOIN clients c ON p.client_id = c.client_id
-                WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
-            )
-        ''', (script_data, client_name, project_name, script_name))
-        conn.commit()
-        return {"status": "success"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
-
-
-def get_script_result(client_name, project_name, script_name):
-    """Получает данные результата скрипта"""
-    conn = get_db()
-    try:
-        script = conn.execute('''
-            SELECT s.script_result 
-            FROM scripts s
-            JOIN projects p ON s.project_id = p.project_id
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
-        ''', (client_name, project_name, script_name)).fetchone()
-
-        return script['script_result'] if script else None
-    finally:
-        conn.close()
-
-
-def save_script_result(client_name, project_name, script_name, script_result):
-    """Сохраняет данные результата скрипта"""
-    conn = None
-    try:
-        conn = get_db()
-        conn.execute('''
-            UPDATE scripts
-            SET script_result = ?
-            WHERE script_id IN (
-                SELECT s.script_id
-                FROM scripts s
-                JOIN projects p ON s.project_id = p.project_id
-                JOIN clients c ON p.client_id = c.client_id
-                WHERE c.client_name = ? AND p.project_name = ? AND s.script_name = ?
-            )
-        ''', (script_result, client_name, project_name, script_name))
-        conn.commit()
-        return {"status": "success"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
-
-
-def delete_client(client_name):
-    """Удаляет клиента и все связанные проекты и скрипты (каскадное удаление)"""
-    conn = None
-    try:
-        conn = get_db()
-        # Включение поддержки внешних ключей (на всякий случай)
-        conn.execute("PRAGMA foreign_keys = ON")
-
-        cursor = conn.cursor()
-        cursor.execute(
-            'DELETE FROM clients WHERE client_name = ?',
-            (client_name,)
-        )
-        affected_rows = cursor.rowcount
-        conn.commit()
-
-        if affected_rows > 0:
-            return {"status": "success", "message": f"Клиент '{client_name}' и все связанные данные удалены"}
-        else:
+        client = Client.get(name=client_name)
+        if not client:
             return {"status": "error", "message": "Клиент не найден"}
+
+        project = Project.get(client=client, name=project_name)
+        if not project:
+            return {"status": "error", "message": "Проект не найден"}
+
+        script = Script.get(project=project, name=script_name)
+        if not script:
+            return {"status": "error", "message": "Скрипт не найден"}
+
+        script.data = script_data
+        orm.commit()
+        return {"status": "success"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
 
 
-def delete_project(client_name, project_name):
+@db_session
+def get_script_result(client_name: str, project_name: str, script_name: str):
+    """Получает данные результата скрипта"""
+    client = Client.get(name=client_name)
+    if not client:
+        return None
+
+    project = Project.get(client=client, name=project_name)
+    if not project:
+        return None
+
+    script = Script.get(project=project, name=script_name)
+    return script.result if script else None
+
+
+@db_session
+def save_script_result(client_name: str, project_name: str, script_name: str, script_result: str):
+    """Сохраняет данные результата скрипта"""
+    try:
+        client = Client.get(name=client_name)
+        if not client:
+            return {"status": "error", "message": "Клиент не найден"}
+
+        project = Project.get(client=client, name=project_name)
+        if not project:
+            return {"status": "error", "message": "Проект не найден"}
+
+        script = Script.get(project=project, name=script_name)
+        if not script:
+            return {"status": "error", "message": "Скрипт не найден"}
+
+        script.result = script_result
+        orm.commit()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@db_session
+def delete_client(client_name: str):
+    """Удаляет клиента и все связанные проекты и скрипты (каскадное удаление)"""
+    try:
+        client = Client.get(name=client_name)
+        if not client:
+            return {"status": "error", "message": "Клиент не найден"}
+
+        client.delete()
+        orm.commit()
+        return {"status": "success", "message": f"Клиент '{client_name}' и все связанные данные удалены"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@db_session
+def delete_project(client_name: str, project_name: str):
     """Удаляет проект и все связанные скрипты (каскадное удаление)"""
     if project_name.lower() == 'action':
         return {"status": "error", "message": "Invalid project name"}
 
-    conn = None
     try:
-        conn = get_db()
-        # Включение поддержки внешних ключей
-        conn.execute("PRAGMA foreign_keys = ON")
-
-        cursor = conn.cursor()
-        # Получаем client_id для проверки существования клиента
-        client = cursor.execute(
-            'SELECT client_id FROM clients WHERE client_name = ?',
-            (client_name,)
-        ).fetchone()
-
+        client = Client.get(name=client_name)
         if not client:
             return {"status": "error", "message": "Клиент не найден"}
 
-        # Удаляем проект (скрипты удалятся каскадно)
-        cursor.execute('''
-            DELETE FROM projects 
-            WHERE client_id = ? AND project_name = ?''',
-                       (client['client_id'], project_name)
-                       )
-        affected_rows = cursor.rowcount
-        conn.commit()
-
-        if affected_rows > 0:
-            return {"status": "success", "message": f"Проект '{project_name}' и все связанные скрипты удалены"}
-        else:
+        project = Project.get(client=client, name=project_name)
+        if not project:
             return {"status": "error", "message": "Проект не найден"}
+
+        project.delete()
+        orm.commit()
+        return {"status": "success", "message": f"Проект '{project_name}' и все связанные скрипты удалены"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
 
 
-def delete_script(client_name, project_name, script_name):
+@db_session
+def delete_script(client_name: str, project_name: str, script_name: str):
     """Удаляет скрипт"""
     if script_name.lower() == 'action':
         return {"status": "error", "message": "Invalid script name"}
 
-    conn = None
     try:
-        conn = get_db()
-        cursor = conn.cursor()
+        client = Client.get(name=client_name)
+        if not client:
+            return {"status": "error", "message": "Клиент не найден"}
 
-        # Находим проект
-        project = cursor.execute('''
-            SELECT p.project_id 
-            FROM projects p
-            JOIN clients c ON p.client_id = c.client_id
-            WHERE c.client_name = ? AND p.project_name = ?''',
-                                 (client_name, project_name)
-                                 ).fetchone()
-
+        project = Project.get(client=client, name=project_name)
         if not project:
             return {"status": "error", "message": "Проект не найден"}
 
-        # Удаляем скрипт
-        cursor.execute(
-            'DELETE FROM scripts WHERE project_id = ? AND script_name = ?',
-            (project['project_id'], script_name)
-        )
-        affected_rows = cursor.rowcount
-        conn.commit()
-
-        if affected_rows > 0:
-            return {"status": "success", "message": f"Скрипт '{script_name}' удален"}
-        else:
+        script = Script.get(project=project, name=script_name)
+        if not script:
             return {"status": "error", "message": "Скрипт не найден"}
+
+        script.delete()
+        orm.commit()
+        return {"status": "success", "message": f"Скрипт '{script_name}' удален"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        if conn:
-            conn.close()
