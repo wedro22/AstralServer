@@ -1,50 +1,46 @@
 local function safeExecute(code)
-  -- Создаем буфер для вывода
-  local output = {}
-  local function capture(...)
-    local args = {...}
-    for i = 1, select('#', ...) do
-      table.insert(output, tostring(args[i]))
-      if i < select('#', ...) then
-        table.insert(output, "\t")
-      end
+    local prints = {}
+    local returns = {}
+    local errors = nil
+
+    -- Захватываем вывод print
+    local oldPrint = print
+    print = function(...)
+        local parts = {}
+        for i = 1, select('#', ...) do
+            parts[i] = tostring(select(i, ...))
+        end
+        table.insert(prints, table.concat(parts, "\t"))
     end
-    table.insert(output, "\n")
-  end
 
-  -- Сохраняем оригинальные функции вывода
-  local oldPrint = print
-  local oldIoWrite = io.write
+    -- Выполняем код
+    local success, results = pcall(function()
+        local fn, err = load(code, "=dynamic", "t")
+        if not fn then
+            -- Восстанавливаем print
+            print = oldPrint
+            error(err)
+        end
+        return {fn()}  -- Собираем все возвращаемые значения в таблицу
+    end)
 
-  -- Перехватываем вывод
-  print = capture
-  io.write = function(...) capture(...) return true end
+    -- Восстанавливаем print
+    print = oldPrint
 
-  -- Выполняем код в защищенном режиме
-  local success, result = pcall(function()
-    local fn, err = load(code, "=dynamic", "t")
-    if not fn then error(err) end
-    return fn()
-  end)
+    -- Обрабатываем результаты
+    if not success then
+        errors = tostring(results)
+    else
+        -- Преобразуем все возвращаемые значения в строки с переносами
+        for i, val in ipairs(results) do
+            returns[i] = tostring(val)
+        end
+    end
 
-  -- Восстанавливаем оригинальные функции
-  print = oldPrint
-  io.write = oldIoWrite
-
-  -- Добавляем результат выполнения или ошибку в вывод
-  if not success then
-    table.insert(output, "Execution error: " .. tostring(result) .. "\n")
-  elseif result ~= nil then
-    table.insert(output, "Return: " .. tostring(result) .. "\n")
-  end
-
-  -- Объединяем весь вывод в одну строку, предотвращая переполнение
-  local combined = table.concat(output)
-  if #combined > 1024 * 64 then -- Ограничение на 64KB
-    combined = combined:sub(1, 1024 * 64) .. "\n...[output truncated]"
-  end
-
-  return combined
+    return
+        table.concat(prints, "\n"),  -- Все выводы print
+        table.concat(returns, "\n"), -- Все возвращаемые значения, каждое с новой строки
+        errors or ""                 -- Ошибки
 end
 
 return {safeExecute = safeExecute}
