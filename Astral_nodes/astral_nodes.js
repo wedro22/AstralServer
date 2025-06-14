@@ -1,7 +1,10 @@
-import { createInfiniteBackground } from './background.js';
+//import { createInfiniteBackground } from './background2.js';    //(не работает)
+import { InputController } from './inputController.js';
 
 // This example is the based on basic/container, but using OffscreenCanvas.
 
+document.body.style.margin = '0';   // Убираем стандартные отступы у body
+document.body.style.overflow = 'hidden'; // Отключаем скроллбары
 const canvas = document.createElement('canvas');    //Создаёт обычный HTML-элемент <canvas> в памяти (но не добавляет его на страницу). Чтобы получить доступ к API Canvas 2D или WebGL. Пока canvas не добавлен в DOM (document.body.appendChild(canvas)), он не отображается. Это стандартный способ работы с Canvas.
 const view = canvas.transferControlToOffscreen();   //Преобразует обычный <canvas> в OffscreenCanvas — специальный объект, который можно передать в Web Worker. Вынести тяжёлые вычисления (рендеринг, анимации) в фоновый поток.
 
@@ -11,18 +14,18 @@ const view = canvas.transferControlToOffscreen();   //Преобразует о�
     const app = new PIXI.Application(view);
 
     // Initialize the application
-    await app.init({ view, background: '#1099bb', resizeTo: window });
+    await app.init({ view, background: '#2a2a3a', resizeTo: window });
 
     // Append the application canvas to the document body
     document.body.appendChild(canvas);
 
-    // 1. Основной контейнер (будет двигаться как "камера")
+    // 1. Основной контейнер мира (будет масштабироваться)
     const world = new PIXI.Container();
     app.stage.addChild(world);
 
-    // 2. Контейнер для статичных элементов (не двигается)
+    // 2. UI контейнер
     const ui = new PIXI.Container();
-    app.stage.addChild(ui); // Добавляем НЕ в world, а в app.stage
+    app.stage.addChild(ui);
 
     // 3. Какой-нибудь контейнер для объектов находящийся в world
     const container = new PIXI.Container();
@@ -30,35 +33,8 @@ const view = canvas.transferControlToOffscreen();   //Преобразует о�
 
 
 
-    createInfiniteBackground(app, world); // Вызываем здесь
-
-
-
-    // Перетаскивание
-    let isDragging = false;
-    let lastPosition = { x: 0, y: 0 };
-    // Начало перетаскивания
-    canvas.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        lastPosition = { x: e.clientX, y: e.clientY };
-    });
-    // Движение мыши
-    canvas.addEventListener('pointermove', (e) => {
-        if (!isDragging)  return;
-
-        const dx = e.clientX - lastPosition.x;
-        const dy = e.clientY - lastPosition.y;
-
-        // Перемещаем "мир" в противоположном направлении
-        world.x += dx;
-        world.y += dy;
-
-        lastPosition = { x: e.clientX, y: e.clientY };
-    });
-    // Конец перетаскивания
-    canvas.addEventListener('pointerup', () => {
-        isDragging = false;
-    });
+    //createInfiniteBackground(app, world); // Бесконечный фон с эффектом параллакса (не работает)
+    const inputController = new InputController(canvas, world); // Создаём контроллер ввода
 
 
 
@@ -89,6 +65,50 @@ const view = canvas.transferControlToOffscreen();   //Преобразует о�
     // * use delta to create frame-independent transform *
     container.rotation -= 0.01 * time.deltaTime;
     });
+
+
+
+
+    // Создаем UI панель с фиксированной высотой и автоматической шириной
+    const uiPanel = new PIXI.Container();
+    uiPanel.y = app.screen.height - 60; // Фиксированная позиция внизу
+    ui.addChild(uiPanel);
+
+    // Фон для панели (отдельный элемент для гибкости)
+    const bg = new PIXI.Graphics()
+        .beginFill(0x2a2a3a, 0.7)
+        .drawRect(0, 0, app.screen.width, 60)
+        .endFill();
+    uiPanel.addChild(bg);
+
+    // Текстовая подсказка
+    const hintText = new PIXI.Text("Двойной клик для создания нового элемента", {
+        fontFamily: 'Arial',
+        fontSize: 18,
+        fill: 0xffffff,
+        align: 'center'
+    });
+
+    // Центрируем текст относительно панели
+    hintText.anchor.set(0.5);
+    hintText.position.set(bg.width / 2, bg.height / 2);
+    uiPanel.addChild(hintText);
+
+    // Единственный обработчик ресайза для всей панели
+    const updateUIPanel = () => {
+        // Обновляем размер фона
+        bg.width = app.screen.width;
+        bg.height = 60;
+
+        // Позиционируем панель
+        uiPanel.y = app.screen.height - bg.height;
+
+        // Автоматическое центрирование текста
+        hintText.position.set(bg.width / 2, bg.height / 2);
+    };
+
+    app.renderer.on('resize', updateUIPanel);
+    updateUIPanel(); // Первоначальная настройка
 })();
 
 
