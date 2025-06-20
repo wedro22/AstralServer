@@ -14,7 +14,7 @@ document.body.style.overflow = 'hidden'; // Отключаем скроллба�
 (async () => {
     // Create a new application
     const app = new PIXI.Application();
-    await app.init({ background: '#2a2a3a', resizeTo: window });
+    await app.init({ antialias: true,background: '#2a2a3a', resizeTo: window });
 
     document.body.appendChild(app.canvas);
     
