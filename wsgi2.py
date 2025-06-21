@@ -1,6 +1,6 @@
 import os
 from bottle import Bottle, default_app, TEMPLATE_PATH
-import server  # импортируем весь server.py
+import server2  # импортируем весь server.py
 
 # Получаем текущую директорию, где находится wsgi.py
 current_dir = os.path.dirname(os.path.abspath(__file__))

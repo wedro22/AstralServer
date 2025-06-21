@@ -13,7 +13,7 @@ class Client(db.Entity):
     id = orm.PrimaryKey(int, auto=True)
     name = orm.Required(str, unique=True)
     projects = orm.Set('Project', reverse='client')
-    scripts = orm.Set('Script', reverse='client')  # Добавляем обратную ссылку
+    scripts = orm.Set('Script', reverse='client')
 
 
 class Project(db.Entity):
@@ -21,7 +21,7 @@ class Project(db.Entity):
     client = orm.Required(Client, reverse='projects')
     name = orm.Required(str)
     type = orm.Optional(str, nullable=True)
-    scripts = orm.Set('Script', reverse='project')  # Уже есть
+    scripts = orm.Set('Script', reverse='project')
 
     orm.composite_key(client, name)
 
@@ -29,7 +29,7 @@ class Project(db.Entity):
 class Script(db.Entity):
     id = orm.PrimaryKey(int, auto=True)
     project = orm.Required(Project, reverse='scripts')
-    client = orm.Required(Client, reverse='scripts')  # Добавляем обратную ссылку
+    client = orm.Required(Client, reverse='scripts')
     name = orm.Required(str)
     data = orm.Optional(str, default='')
     result = orm.Optional(str, default='')

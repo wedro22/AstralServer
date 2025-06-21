@@ -8,8 +8,6 @@ export class World extends PIXI.Container {
         super();
         this.app = app;
         this.lastPosition = { x: 0, y: 0 };
-        //this.eventMode = 'static';
-        //this.hitArea = app.screen;
         this.app.stage.eventMode = 'static';
         this.app.stage.hitArea = this.app.screen;
         this.app.stage.cursor = 'pointer';

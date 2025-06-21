@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дополнительные эффекты волн</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .section {
+            margin: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00d4ff;
+        }
+
+        /* 1. Простой способ с border-radius */
+        .wave-simple {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            animation: waveSimple 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes waveSimple {
+            0%, 100% { border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+            50% { border-radius: 30% 70% 0 0 / 80% 120% 0 0; }
+        }
+
+        /* 2. Псевдоэлементы для волн */
+        .wave-pseudo {
+            height: 200px;
+            background: linear-gradient(45deg, #2a1968, #150435);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-pseudo::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: inherit;
+            border-radius: 50% 50% 0 0;
+            animation: waveUp 3s ease-in-out infinite;
+        }
+
+        .wave-pseudo::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: inherit;
+            border-radius: 50% 50% 0 0;
+            animation: waveUp 3s ease-in-out infinite reverse;
+            opacity: 0.7;
+        }
+
+        @keyframes waveUp {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-10px) scaleY(1.2); }
+        }
+
+        /* 3. Множественные градиенты */
+        .wave-multiple {
+            height: 200px;
+            background: 
+                radial-gradient(ellipse at 25% 50%, rgba(255,255,255,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 75% 50%, rgba(255,255,255,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #a8edea, #fed6e3);
+            animation: waveMultiple 6s ease-in-out infinite;
+        }
+
+        @keyframes waveMultiple {
+            0%, 100% { 
+                background-position: 0% 50%, 100% 50%, 50% 100%, 0% 0%;
+            }
+            33% { 
+                background-position: 100% 50%, 0% 50%, 50% 0%, 100% 100%;
+            }
+            66% { 
+                background-position: 50% 0%, 50% 100%, 0% 50%, 100% 0%;
+            }
+        }
+
+        /* 4. CSS Clip-path */
+        .wave-clip {
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            clip-path: polygon(
+                0% 100%,
+                20% 80%,
+                40% 90%,
+                60% 70%,
+                80% 85%,
+                100% 75%,
+                100% 100%
+            );
+            animation: waveClip 5s ease-in-out infinite;
+        }
+
+        @keyframes waveClip {
+            0%, 100% {
+                clip-path: polygon(
+                    0% 100%,
+                    20% 80%,
+                    40% 90%,
+                    60% 70%,
+                    80% 85%,
+                    100% 75%,
+                    100% 100%
+                );
+            }
+            50% {
+                clip-path: polygon(
+                    0% 100%,
+                    20% 90%,
+                    40% 70%,
+                    60% 85%,
+                    80% 75%,
+                    100% 90%,
+                    100% 100%
+                );
+            }
+        }
+
+        /* 5. Box-shadow для волн */
+        .wave-shadow {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-shadow::before {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            right: -50px;
+            height: 100px;
+            background: inherit;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 0 50px rgba(255,255,255,0.1),
+                0 0 0 100px rgba(255,255,255,0.05),
+                0 0 0 150px rgba(255,255,255,0.025);
+            animation: waveShadow 4s ease-in-out infinite;
+        }
+
+        @keyframes waveShadow {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+        }
+
+        /* 6. Текст с волновым эффектом */
+        .wave-text {
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-text::before {
+            content: 'ВОЛНЫ';
+            position: absolute;
+            color: rgba(255,255,255,0.3);
+            animation: waveText 3s ease-in-out infinite;
+        }
+
+        .wave-text::after {
+            content: 'ВОЛНЫ';
+            position: absolute;
+            color: rgba(255,255,255,0.1);
+            animation: waveText 3s ease-in-out infinite reverse;
+        }
+
+        @keyframes waveText {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        /* Контейнер для демонстрации */
+        .demo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .demo-item {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .demo-label {
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin: 20px; color: #00d4ff;">Дополнительные эффекты волн</h1>
+    
+    <div class="demo-container">
+        <div class="demo-item">
+            <div class="demo-label">1. Border-radius волны</div>
+            <div class="wave-simple"></div>
+        </div>
+
+        <div class="demo-item">
+            <div class="demo-label">2. Псевдоэлементы</div>
+            <div class="wave-pseudo"></div>
+        </div>
+
+        <div class="demo-item">
+            <div class="demo-label">3. Множественные градиенты</div>
+            <div class="wave-multiple"></div>
+        </div>
+
+        <div class="demo-item">
+            <div class="demo-label">4. Clip-path волны</div>
+            <div class="wave-clip"></div>
+        </div>
+
+        <div class="demo-item">
+            <div class="demo-label">5. Box-shadow эффект</div>
+            <div class="wave-shadow"></div>
+        </div>
+
+        <div class="demo-item">
+            <div class="demo-label">6. Текстовые волны</div>
+            <div class="wave-text">ВОЛНЫ</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Описание методов</h2>
+        <ul>
+            <li><strong>Border-radius:</strong> Простой способ с анимацией border-radius</li>
+            <li><strong>Псевдоэлементы:</strong> Использование ::before и ::after для создания слоев волн</li>
+            <li><strong>Множественные градиенты:</strong> Комбинация radial-gradient с анимацией позиции</li>
+            <li><strong>Clip-path:</strong> Создание волн с помощью CSS clip-path</li>
+            <li><strong>Box-shadow:</strong> Эффект волн через множественные тени</li>
+            <li><strong>Текстовые волны:</strong> Анимация текста с эффектом волн</li>
+        </ul>
+    </div>
+</body>
+</html> 

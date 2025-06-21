@@ -1,0 +1,114 @@
+/* Astral2 Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --scrollbar-thumb: rgba(255, 255, 255, 0.4);
+    --scrollbar-track: rgba(255, 255, 255, 0.1);
+    --scrollbar-radius: 25px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    color: #ffffff;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.projects-panel {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    padding-right: 40px;
+    box-shadow: 0 8px 32px #2a2a3a4f;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    font-weight: 300;
+}
+
+.search-box {
+    margin-bottom: 25px;
+}
+
+#projectSearch {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #2a2a3acc;
+    color: #ffffff;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#projectSearch::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#projectSearch:focus {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.projects-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: auto;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    padding-right: 15px;
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+    box-sizing: border-box;
+}
+
+.project-item {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    list-style: none;
+}
+
+.project-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+}
+
+.project-item.highlighted {
+    background: rgba(120, 119, 198, 0.4);
+    border-color: rgba(120, 119, 198, 0.6);
+}
+
+.project-item .project-name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.project-item .project-date {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
