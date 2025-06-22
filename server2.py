@@ -32,27 +32,32 @@ def astral():
         # Заглушка для POST запроса
         return 'POST запрос получен'
 
-@route('/api/projects')
+@route('/api/projects', method='GET')
 def get_projects():
-    # Устанавливаем заголовок для JSON
+    """Список всех проектов."""
     response.content_type = 'application/json'
-    
-    # Тестовые данные (временная заглушка)
-    projects = [
-        { "name": "Мой первый проект", "created": "2024-01-15" },
-        { "name": "Тестовый проект", "created": "2024-01-20" },
-        { "name": "Рабочий проект", "created": "2024-01-25" },
-        { "name": "Проект номер четыре", "created": "2024-01-26" },
-        { "name": "Пятый проект", "created": "2024-01-27" },
-        { "name": "Шестой проект", "created": "2024-01-28" },
-        { "name": "Седьмой проект", "created": "2024-01-29" },
-        { "name": "Восьмой проект", "created": "2024-01-30" },
-        { "name": "Девятый проект", "created": "2024-01-31" },
-        { "name": "Десятый проект", "created": "2024-02-01" }
-    ]
-    
+    projects = database2.list_projects()
     return json.dumps({
         "success": True,
-        "projects": projects
-    })
+        "projects": projects,
+    }, ensure_ascii=False)
+
+@post('/api/projects')
+def create_project():
+    """Создание нового проекта."""
+    response.content_type = 'application/json'
+    data = request.json or {}
+    name = data.get('name')
+    if not name:
+        response.status = 400
+        return json.dumps({"success": False, "message": "Поле 'name' обязательно"}, ensure_ascii=False)
+
+    try:
+        project = database2.add_project(name)
+    except Exception as e:
+        response.status = 400
+        return json.dumps({"success": False, "message": str(e)}, ensure_ascii=False)
+
+    response.status = 201
+    return json.dumps({"success": True, "project": project}, ensure_ascii=False)
 
