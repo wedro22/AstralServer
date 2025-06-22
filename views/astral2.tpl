@@ -13,7 +13,10 @@
             <h1>Проекты</h1>
             
             <div class="search-box">
-                <input type="text" id="projectSearch" placeholder="Поиск или создание проекта...">
+                <div class="search-container">
+                    <input type="text" id="projectSearch" placeholder="Поиск или создание проекта...">
+                    <button type="button" id="searchButton" class="search-btn">>></button>
+                </div>
             </div>
             
             <ul class="projects-list" id="projectsList" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
@@ -82,15 +85,11 @@
         // Создание нового проекта
         function createProject(name) {
             if (confirm(`Создать новый проект "${name}"?`)) {
-                const newProject = {
-                    id: projects.length + 1,
-                    name: name,
-                    created: new Date().toISOString().split('T')[0]
-                };
-                projects.push(newProject);
-                loadProjects();
-                searchInput.value = '';
-                openProject(newProject.id);
+                // Заглушка отправки на сервер
+                alert('Проект отправлен на сервер (заглушка)');
+                // Создаем временный объект для открытия
+                const tempProject = { id: 'temp' };
+                openProject(tempProject.id);
             }
         }
 
@@ -106,18 +105,24 @@
 
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const query = e.target.value.trim();
-                if (query.length > 0) {
-                    const exists = projects.some(p => p.name.toLowerCase() === query.toLowerCase());
-                    if (exists) {
-                        const project = projects.find(p => p.name.toLowerCase() === query.toLowerCase());
-                        openProject(project.id);
-                    } else {
-                        createProject(query);
-                    }
-                }
+                handleSearch();
             }
         });
+
+        document.getElementById('searchButton').addEventListener('click', handleSearch);
+
+        function handleSearch() {
+            const query = searchInput.value.trim();
+            if (query.length > 0) {
+                const exists = projects.some(p => p.name.toLowerCase() === query.toLowerCase());
+                if (exists) {
+                    const project = projects.find(p => p.name.toLowerCase() === query.toLowerCase());
+                    openProject(project.id);
+                } else {
+                    createProject(query);
+                }
+            }
+        }
 
         // Инициализация
         loadProjects();
