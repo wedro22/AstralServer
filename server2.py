@@ -37,22 +37,34 @@ def get_projects():
     # Устанавливаем заголовок для JSON
     response.content_type = 'application/json'
     
-    # Тестовые данные (временная заглушка)
-    projects = [
-        { "name": "Мой первый проект", "created": "2024-01-15" },
-        { "name": "Тестовый проект", "created": "2024-01-20" },
-        { "name": "Рабочий проект", "created": "2024-01-25" },
-        { "name": "Проект номер четыре", "created": "2024-01-26" },
-        { "name": "Пятый проект", "created": "2024-01-27" },
-        { "name": "Шестой проект", "created": "2024-01-28" },
-        { "name": "Седьмой проект", "created": "2024-01-29" },
-        { "name": "Восьмой проект", "created": "2024-01-30" },
-        { "name": "Девятый проект", "created": "2024-01-31" },
-        { "name": "Десятый проект", "created": "2024-02-01" }
-    ]
+    try:
+        # Получаем реальные проекты из базы данных
+        projects = database2.get_all_projects()
+        
+        return json.dumps({
+            "success": True,
+            "projects": projects
+        })
+    except Exception as e:
+        return json.dumps({
+            "success": False,
+            "error": str(e)
+        })
+
+@route('/api/projects', method='POST')
+def create_project():
+    response.content_type = 'application/json'
     
-    return json.dumps({
-        "success": True,
-        "projects": projects
-    })
+    try:
+        data = request.json
+        project_name = data.get('name', '').strip()
+        
+        if not project_name:
+            return json.dumps({"success": False, "error": "Имя проекта не может быть пустым"})
+        
+        database2.create_project(project_name)
+        return json.dumps({"success": True})
+        
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e)})
 

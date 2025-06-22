@@ -42,8 +42,8 @@
                     projects = data.projects;
                     displayProjects();
                 } else {
-                    console.error('Ошибка загрузки проектов');
-                    projectsList.innerHTML = '<li class="error">Ошибка загрузки проектов</li>';
+                    console.error('Ошибка загрузки проектов:', data.error);
+                    projectsList.innerHTML = `<li class="error">Ошибка: ${data.error}</li>`;
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке проектов:', error);
@@ -59,7 +59,7 @@
                 item.className = 'project-item';
                 item.innerHTML = `
                     <div class="project-name">${project.name}</div>
-                    <div class="project-date">Создан: ${project.created}</div>
+                    <div class="project-date">Создан: ${project.created_at}</div>
                 `;
                 item.onclick = () => openProject(project.name);
                 projectsList.appendChild(item);
@@ -91,13 +91,57 @@
         }
 
         // Создание нового проекта
-        function createProject(name) {
-            if (confirm(`Создать новый проект "${name}"?`)) {
-                // Заглушка отправки на сервер
-                alert('Проект отправлен на сервер (заглушка)');
-                // Создаем временный объект для открытия
-                openProject(name);
+        async function createProject(name) {
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Открываем созданный проект (переход на другую страницу)
+                    openProject(name);
+                } else {
+                    // Показываем ошибку пользователю
+                    showError(data.error);
+                    // Перезагружаем список проектов для актуальности данных
+                    await loadProjects();
+                }
+            } catch (error) {
+                console.error('Ошибка при создании проекта:', error);
+                showError('Ошибка соединения с сервером');
             }
+        }
+
+        // Функция для отображения ошибок
+        function showError(message) {
+            // Очищаем предыдущие ошибки
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Создаем элемент ошибки
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            errorDiv.style.cssText = 'color: red; background: #ffe6e6; padding: 10px; margin: 10px 0; border: 1px solid #ff9999; border-radius: 4px;';
+            
+            // Вставляем ошибку после заголовка
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, container.firstChild.nextSibling);
+            
+            // Автоматически убираем ошибку через 5 секунд
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
         }
 
         // Обработчики событий
