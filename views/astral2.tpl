@@ -26,25 +26,33 @@
     </div>
 
     <script>
-        // Тестовые данные для демонстрации
-        let projects = [
-            { id: 1, name: "Мой первый проект", created: "2024-01-15" },
-            { id: 2, name: "Тестовый проект", created: "2024-01-20" },
-            { id: 3, name: "Рабочий проект", created: "2024-01-25" },
-            { id: 4, name: "Проект номер четыре", created: "2024-01-26" },
-            { id: 5, name: "Пятый проект", created: "2024-01-27" },
-            { id: 6, name: "Шестой проект", created: "2024-01-28" },
-            { id: 7, name: "Седьмой проект", created: "2024-01-29" },
-            { id: 8, name: "Восьмой проект", created: "2024-01-30" },
-            { id: 9, name: "Девятый проект", created: "2024-01-31" },
-            { id: 10, name: "Десятый проект", created: "2024-02-01" }
-        ];
+        // Глобальная переменная для хранения проектов
+        let projects = [];
 
         const searchInput = document.getElementById('projectSearch');
         const projectsList = document.getElementById('projectsList');
 
-        // Загрузка проектов
-        function loadProjects() {
+        // Загрузка проектов с сервера
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                
+                if (data.success) {
+                    projects = data.projects;
+                    displayProjects();
+                } else {
+                    console.error('Ошибка загрузки проектов');
+                    projectsList.innerHTML = '<li class="error">Ошибка загрузки проектов</li>';
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке проектов:', error);
+                projectsList.innerHTML = '<li class="error">Ошибка соединения с сервером</li>';
+            }
+        }
+
+        // Отображение проектов в списке
+        function displayProjects() {
             projectsList.innerHTML = '';
             projects.forEach(project => {
                 const item = document.createElement('li');
@@ -53,7 +61,7 @@
                     <div class="project-name">${project.name}</div>
                     <div class="project-date">Создан: ${project.created}</div>
                 `;
-                item.onclick = () => openProject(project.id);
+                item.onclick = () => openProject(project.name);
                 projectsList.appendChild(item);
             });
         }
@@ -78,8 +86,8 @@
         }
 
         // Открытие проекта
-        function openProject(id) {
-            alert(`Переход к проекту ${id} (заглушка)`);
+        function openProject(projectName) {
+            alert(`Переход к проекту "${projectName}" (заглушка)`);
         }
 
         // Создание нового проекта
@@ -88,8 +96,7 @@
                 // Заглушка отправки на сервер
                 alert('Проект отправлен на сервер (заглушка)');
                 // Создаем временный объект для открытия
-                const tempProject = { id: 'temp' };
-                openProject(tempProject.id);
+                openProject(name);
             }
         }
 
@@ -99,7 +106,7 @@
             if (query.length > 0) {
                 searchProjects(query);
             } else {
-                loadProjects();
+                displayProjects();
             }
         });
 
@@ -117,7 +124,7 @@
                 const exists = projects.some(p => p.name.toLowerCase() === query.toLowerCase());
                 if (exists) {
                     const project = projects.find(p => p.name.toLowerCase() === query.toLowerCase());
-                    openProject(project.id);
+                    openProject(project.name);
                 } else {
                     createProject(query);
                 }

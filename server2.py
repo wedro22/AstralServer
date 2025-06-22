@@ -1,6 +1,7 @@
 import os
 from bottle import route, request, post, static_file, template, redirect, hook, response
 import database2
+import json
 
 project_root = os.path.dirname(os.path.abspath(__file__))
 database2.init_db()
@@ -30,4 +31,28 @@ def astral():
     elif request.method == 'POST':
         # Заглушка для POST запроса
         return 'POST запрос получен'
+
+@route('/api/projects')
+def get_projects():
+    # Устанавливаем заголовок для JSON
+    response.content_type = 'application/json'
+    
+    # Тестовые данные (временная заглушка)
+    projects = [
+        { "name": "Мой первый проект", "created": "2024-01-15" },
+        { "name": "Тестовый проект", "created": "2024-01-20" },
+        { "name": "Рабочий проект", "created": "2024-01-25" },
+        { "name": "Проект номер четыре", "created": "2024-01-26" },
+        { "name": "Пятый проект", "created": "2024-01-27" },
+        { "name": "Шестой проект", "created": "2024-01-28" },
+        { "name": "Седьмой проект", "created": "2024-01-29" },
+        { "name": "Восьмой проект", "created": "2024-01-30" },
+        { "name": "Девятый проект", "created": "2024-01-31" },
+        { "name": "Десятый проект", "created": "2024-02-01" }
+    ]
+    
+    return json.dumps({
+        "success": True,
+        "projects": projects
+    })
 
